@@ -14,6 +14,8 @@
 
 This project offers a simple web page for dividing an image into three equal horizontal parts. Users can upload an image, and the program partitions it into three segments. These segments are then compiled into a downloadable ZIP file. The current interface is basic, and I plan to update it using React and TypeScript in the future.
 
+Find it here ; https://secret-guest.github.io/instacut/
+
 ---
 ---
 ---
