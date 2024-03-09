@@ -37,16 +37,6 @@ This project offers a simple web page for dividing an image into three equal hor
 2. **Partition the Image**: Once the image is uploaded, click the button to divide it into three equal parts.
 3. **Download Images**: After partitioning, a button allows you to download all segmented images at once in a ZIP file.
 
-## 📥 Installation
-
-As this is a static web page, there's no installation required. Simply open the HTML file in a browser to get started.
-
-## ❓ Support & Questions
-
-If you have any questions or need support, please feel free to contact me.
-
----
-
 *Note: This project is currently in a basic version. An update of the user interface with React and TypeScript is planned to enhance the user experience and the overall aesthetics of the project.*
 
 
