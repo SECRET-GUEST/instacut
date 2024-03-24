@@ -204,85 +204,89 @@ body {
 <script>
 
 document.addEventListener('DOMContentLoaded', function() {
+    // Selecting elements from the DOM
     const content = document.querySelector('.content');
     const dropZone = document.getElementById('dropZone');
     const uploadButton = document.getElementById('uploadButton');
     const previewContainer = document.getElementById('previewContainer');
     const downloadButton = document.getElementById('downloadButton');
-    let zip = new JSZip();
+    let zip = new JSZip(); // Initializing JSZip for creating ZIP files
 
-    // Initial page animation
+    // Initial animation for the page content
     setTimeout(function() {
         content.style.marginTop = '-8%';
     }, 100);
 
-    // Gestionnaire d'événement pour drag & drop
+    // Event handlers for drag & drop functionality
     dropZone.addEventListener('dragover', (e) => {
         e.stopPropagation();
         e.preventDefault();
-        e.dataTransfer.dropEffect = 'copy';
-        dropZone.classList.add('over');
-        uploadButton.classList.add('hidden'); 
+        e.dataTransfer.dropEffect = 'copy'; // Indicate a copy action on dragover
+        dropZone.classList.add('over'); // Add styling class for dragover
+        uploadButton.classList.add('hidden'); // Hide the upload button on dragover
     });
 
     dropZone.addEventListener('dragleave', () => {
-        dropZone.classList.remove('over');
-        uploadButton.classList.remove('hidden'); 
+        dropZone.classList.remove('over'); // Remove styling class when drag leaves
+        uploadButton.classList.remove('hidden'); // Show the upload button again
     });
 
+    // Handling the drop event
     dropZone.addEventListener('drop', (e) => {
-    e.stopPropagation();
-    e.preventDefault();
-    dropZone.classList.remove('over');
-    uploadButton.classList.remove('hidden');
+        e.stopPropagation();
+        e.preventDefault();
+        dropZone.classList.remove('over');
+        uploadButton.classList.remove('hidden');
 
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-        processFile(files[0]);
-    }
-});
-
-
-    
-    uploadButton.addEventListener('change', function(e) {
-        if (e.target.files.length > 0) {
-            processFile(e.target.files[0]);
+        const files = e.dataTransfer.files;
+        if (files.length > 0) {
+            processFile(files[0]); // Process the dropped file
         }
     });
 
+    // Handle file selection from the input
+    uploadButton.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            processFile(e.target.files[0]); // Process the selected file
+        }
+    });
+
+    // Function to process the file
     function processFile(file) {
-        partitionImage(file);
-        downloadButton.style.display = 'none';
-        previewContainer.innerHTML = '';
-        previewContainer.style.display = 'none';
-        zip = new JSZip(); 
+        partitionImage(file); // Partition the image
+        downloadButton.style.display = 'none'; // Hide the download button initially
+        previewContainer.innerHTML = ''; // Clear the preview container
+        previewContainer.style.display = 'none'; // Hide the preview container initially
+        zip = new JSZip(); // Reset the zip file
     }
 
+    // Function to partition the image and set up previews
     function partitionImage(file) {
         const reader = new FileReader();
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
-                const partWidth = Math.round(img.width / 3);
-                const scaleFactor = 200 / img.height;
+                const partWidth = Math.round(img.width / 3); // Calculate width for each partition
+                const scaleFactor = 200 / img.height; // Calculate scale factor based on desired height
 
-                previewContainer.innerHTML = '';
-                previewContainer.style.display = 'flex';
+                previewContainer.innerHTML = ''; // Clear existing previews
+                previewContainer.style.display = 'flex'; // Display the container as flex
                 previewContainer.style.alignItems = 'center';
                 previewContainer.style.justifyContent = 'center';
 
+                // Loop through each partition
                 for (let i = 0; i < 3; i++) {
                     if (i > 0) {
-                        // Add a spacer div for margin
+                        // Add a spacer div for margin between previews
                         const spacer = document.createElement('div');
-                        spacer.style.width = '10px';
+                        spacer.style.width = '10px'; // Set spacer width
                         previewContainer.appendChild(spacer);
                     }
 
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = partWidth;
-                    canvas.height = img.height;
+                    canvas.width = partWidth; // Set canvas width to partition width
+                    canvas.height = img.height; // Set canvas height to image height
 
                     // Draw the image partition on the canvas
                     ctx.drawImage(img, partWidth * i, 0, partWidth, img.height, 0, 0, partWidth, img.height);
@@ -291,41 +295,49 @@ document.addEventListener('DOMContentLoaded', function() {
                     const dataURL = canvas.toDataURL();
                     const previewImg = new Image();
                     previewImg.src = dataURL;
-                    previewImg.style.height = '200px'; // Set height to 200px
+                    previewImg.style.height = '200px'; // Set height for preview
                     previewImg.style.width = `${partWidth * scaleFactor}px`; // Scale width to maintain aspect ratio
-                    previewContainer.appendChild(previewImg);
+                    previewContainer.appendChild(previewImg); // Add preview image to container
 
-                    // Add the canvas content to ZIP file
+                    // Add the canvas content to the ZIP file
                     canvas.toBlob(function(blob) {
                         zip.file(`partition_${i + 1}.png`, blob);
                     }, 'image/png');
                 }
 
-                downloadButton.style.display = 'inline-block';
+                downloadButton.style.display = 'inline-block'; // Show download button after processing
             };
-            img.src = e.target.result;
+            img.src = e.target.result; // Read the file as an image source
         };
         reader.readAsDataURL(file);
     }
 
+    // Function to download the ZIP file
     function downloadZip() {
         zip.generateAsync({type: "blob"})
             .then(function(content) {
-                saveAs(content, "partitions.zip");
+                saveAs(content, "partitions.zip"); // Trigger the download of the ZIP file
             });
     }
 
-
-
+    // Event listener for download button
     downloadButton.addEventListener('click', downloadZip);
 
+    // Event listener for window scroll
     window.addEventListener('scroll', function() {
+        // Calculate the scroll percentage relative to the window height
         let scrollPercentage = window.scrollY / window.innerHeight;
+
+        // Dynamically adjust the top margin of the content based on the scroll percentage
         let newMarginTop = -8 - (scrollPercentage * 12);
         newMarginTop = Math.max(-20, Math.min(-3, newMarginTop));
+        
+        // Apply the calculated top margin to the content element
         content.style.marginTop = newMarginTop + '%';
     });
 });
+
+
 
     </script>
 </body>
