@@ -2,100 +2,332 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Partitionneur d'Image</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INSTACUT</title>
+    
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+
+
     <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #E0FFFF; /* Crystal Blue */
-            text-align: center;
-            padding: 20px;
-        }
 
-        #app {
+body {
+    background-color: #f0eae3;
+    font-family: 'Arial', sans-serif;
+    text-align: center;
+    margin: 0; 
+    padding: 0; 
+}
+
+
+.title-top {
+    z-index: -1;
+    font-size: 17vw;
+    font-weight: bold; 
+    color: white; 
+    overflow: hidden;
+}
+
+.content{
+    position: sticky;
+    display: block;
+    width: 100%;
+    height: 100%;
+    padding-bottom: 10%;
+    margin-top: -20%;
+    transition: margin-top 0.3s;
+    background-color: #ffffff;
+}
+
+.white{
+    z-index: -1;
+    position: fixed;
+    background-color: #fff;
+    margin-top: 50%;
+    width: 100%;
+    height: 100%;
+}
+
+#uploadButton, #downloadButton {
+    padding: 10px 20px;
+    font-size: 2em;
+    background-color: #a7cbd9;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    color: white;
+}
+
+
+
+
+#previewContainer::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(0, 0, 0, 0),
+        rgba(0, 0, 0, 0) 10px,
+        rgba(128, 128, 128, 0.5) 10px,
+        rgba(128, 128, 128, 0.5) 20px
+    );
+    pointer-events: none;
+    z-index: 1;
+}
+
+#previewContainer .preview-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: rgba(128, 128, 128, 0.5);
+    font-size: 5em;
+    z-index: 2;
+}
+
+#previewContainer {
+            position: relative;
+            width: 700px;
+            height: 200px;
             margin: auto;
-            width: 50%;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            margin-top: 3%;
+            margin-bottom: 1%;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: none; /* Initially hidden */
         }
 
-        button {
-            background-color: #AFE1AF; /* Pastel Green */
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
-            font-size: 16px;
-            margin: 4px 2px;
-            cursor: pointer;
-            border-radius: 8px;
-        }
+.partition-preview {
+    position: absolute;
+    width: 200px;
+    height: 200px;
+    border-left: 50px solid white;
+    background-color: #ddd;
+}
+
+.partition-preview:nth-child(2) { left: 250px; }
+.partition-preview:nth-child(3) { left: 500px; }
+
+#previewContainer img {
+    width: 100%;
+    height: auto;
+    z-index: 0;
+}
+
+
+
+
+
+.drop-zone {
+    position: relative;
+    border: 2px dashed #a7cbd9;
+    padding: 20px;
+    margin: 5%;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+.drop-zone.over::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width:88%;
+    height: 88%;
+    border: 2px dotted #a7cbd9;
+    border-radius: 10px;
+    animation: fadeAndPulse 2s infinite alternate;
+    transform: translate(-50%, -50%);
+}
+
+.drop-zone.over::after {
+    content: '';
+    opacity: 0;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 80%;
+    height: 80%;
+    border: 2px dotted #a7cbd9;
+    border-radius: 10px;
+    animation: pulse 2s infinite alternate;
+    transform: translate(-50%, -50%);
+    animation: fadeAndPulse 2s infinite alternate;
+    transform: translate(-50%, -50%);
+    animation-delay: 0.5s;
+}
+
+@keyframes fadeAndPulse {
+    0%, 100% {
+        opacity: 0;
+        transform: translate(-50%, -50%) scale(1);
+        border-color: #a7cbd9;
+    }
+    100% {
+        opacity: 1;
+        transform: translate(-50%, -50%) scale(1.1);
+        border-color: #b3ffb3;
+    }
+}
+
+.hidden {
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+
+
+
     </style>
+
+
 </head>
+
 <body>
-    <div id="app">
-        <input type="file" id="imageInput" accept="image/*">
-        <button id="partitionButton" onclick="partitionImage()">Partitionner l'Image</button>
-        <div id="loading" style="display: none;">Chargement...</div>
-        <button id="downloadButton" style="display: none;" onclick="downloadZip()">Télécharger les Images</button>
+    <div class="title-top">INSTACUT</div>
+    <div class="content">
+        <div class="drop-zone" id="dropZone">
+            <input type="file" id="uploadButton" accept="image/*" />
+        </div>
+
+        <button id="downloadButton" onclick="downloadZip()" style="display: none;">Télécharger les différentes parties</button>
+        <div id="previewContainer"></div>
+
     </div>
+</body>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.5.0/jszip.min.js"></script>
-    <script>
-        let zip = new JSZip();
+<script>
 
-        function partitionImage() {
-            const imageInput = document.getElementById('imageInput');
-            const loadingDiv = document.getElementById('loading');
-            const downloadButton = document.getElementById('downloadButton');
+document.addEventListener('DOMContentLoaded', function() {
+    const content = document.querySelector('.content');
+    const dropZone = document.getElementById('dropZone');
+    const uploadButton = document.getElementById('uploadButton');
+    const previewContainer = document.getElementById('previewContainer');
+    const downloadButton = document.getElementById('downloadButton');
+    let zip = new JSZip();
 
-            if (imageInput.files && imageInput.files[0]) {
-                loadingDiv.style.display = 'block';
-                downloadButton.style.display = 'none';
-                zip = new JSZip();
+    // Initial page animation
+    setTimeout(function() {
+        content.style.marginTop = '-8%';
+    }, 100);
 
-                const file = imageInput.files[0];
-                const reader = new FileReader();
-                
-                reader.onload = function(e) {
-                    const img = new Image();
-                    img.onload = function() {
-                        const canvas = document.createElement('canvas');
-                        const ctx = canvas.getContext('2d');
+    // Gestionnaire d'événement pour drag & drop
+    dropZone.addEventListener('dragover', (e) => {
+        e.stopPropagation();
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        dropZone.classList.add('over');
+        uploadButton.classList.add('hidden'); 
+    });
 
-                        let newWidth = Math.round(img.width / 3);
-                        canvas.height = img.height;
-                        canvas.width = newWidth;
+    dropZone.addEventListener('dragleave', () => {
+        dropZone.classList.remove('over');
+        uploadButton.classList.remove('hidden'); 
+    });
 
-                        for (let i = 0; i < 3; i++) {
-                            ctx.clearRect(0, 0, canvas.width, canvas.height);
-                            ctx.drawImage(img, newWidth * i, 0, newWidth, img.height, 0, 0, newWidth, img.height);
-                            canvas.toBlob(function(blob) {
-                                zip.file(`partition_${i+1}.png`, blob);
-                            }, 'image/png');
-                        }
+    dropZone.addEventListener('drop', (e) => {
+    e.stopPropagation();
+    e.preventDefault();
+    dropZone.classList.remove('over');
+    uploadButton.classList.remove('hidden');
 
-                        loadingDiv.style.display = 'none';
-                        downloadButton.style.display = 'block';
-                    };
-                    img.src = e.target.result;
-                };
+    const files = e.dataTransfer.files;
+    if (files.length > 0) {
+        processFile(files[0]);
+    }
+});
 
-                reader.readAsDataURL(file);
-            } else {
-                alert('Veuillez sélectionner une image.');
-            }
+
+    
+    uploadButton.addEventListener('change', function(e) {
+        if (e.target.files.length > 0) {
+            processFile(e.target.files[0]);
         }
+    });
 
-        function downloadZip() {
-            zip.generateAsync({type:"blob"})
-                .then(function(content) {
-                    saveAs(content, "partitions.zip");
-                });
-        }
+    function processFile(file) {
+        partitionImage(file);
+        downloadButton.style.display = 'none';
+        previewContainer.innerHTML = '';
+        previewContainer.style.display = 'none';
+        zip = new JSZip(); 
+    }
+
+    function partitionImage(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            const img = new Image();
+            img.onload = function() {
+                const partWidth = Math.round(img.width / 3);
+                const scaleFactor = 200 / img.height;
+
+                previewContainer.innerHTML = '';
+                previewContainer.style.display = 'flex';
+                previewContainer.style.alignItems = 'center';
+                previewContainer.style.justifyContent = 'center';
+
+                for (let i = 0; i < 3; i++) {
+                    if (i > 0) {
+                        // Add a spacer div for margin
+                        const spacer = document.createElement('div');
+                        spacer.style.width = '10px';
+                        previewContainer.appendChild(spacer);
+                    }
+
+                    const canvas = document.createElement('canvas');
+                    const ctx = canvas.getContext('2d');
+                    canvas.width = partWidth;
+                    canvas.height = img.height;
+
+                    // Draw the image partition on the canvas
+                    ctx.drawImage(img, partWidth * i, 0, partWidth, img.height, 0, 0, partWidth, img.height);
+
+                    // Convert canvas to an image for preview
+                    const dataURL = canvas.toDataURL();
+                    const previewImg = new Image();
+                    previewImg.src = dataURL;
+                    previewImg.style.height = '200px'; // Set height to 200px
+                    previewImg.style.width = `${partWidth * scaleFactor}px`; // Scale width to maintain aspect ratio
+                    previewContainer.appendChild(previewImg);
+
+                    // Add the canvas content to ZIP file
+                    canvas.toBlob(function(blob) {
+                        zip.file(`partition_${i + 1}.png`, blob);
+                    }, 'image/png');
+                }
+
+                downloadButton.style.display = 'inline-block';
+            };
+            img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function downloadZip() {
+        zip.generateAsync({type: "blob"})
+            .then(function(content) {
+                saveAs(content, "partitions.zip");
+            });
+    }
+
+
+
+    downloadButton.addEventListener('click', downloadZip);
+
+    window.addEventListener('scroll', function() {
+        let scrollPercentage = window.scrollY / window.innerHeight;
+        let newMarginTop = -8 - (scrollPercentage * 12);
+        newMarginTop = Math.max(-20, Math.min(-3, newMarginTop));
+        content.style.marginTop = newMarginTop + '%';
+    });
+});
+
     </script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/1.3.8/FileSaver.min.js"></script>
 </body>
 </html>
+
