@@ -8,8 +8,6 @@
 ╚═╝╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝ ╚═════╝ ╚═════╝    ╚═╝   
 ```
 ![Javascript](https://img.shields.io/badge/JAVASCRIPT-yellow)
-![ALPHA](https://img.shields.io/badge/BETA-yellow) 
-
 
 # INSTACUT 🧩
 
