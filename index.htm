@@ -4,218 +4,415 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>INSTACUT</title>
-    
-    
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
+    <!-- JSZip library for creating ZIP files -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
 
     <style>
+/* ===================================================== */
+/* ===================== GLOBAL ======================== */
+/* ===================================================== */
+
+:root{
+    --bg0:#07070b;
+    --bg1:#0a0d16;
+    --glass: rgba(255,255,255,0.06);
+    --glass2: rgba(255,255,255,0.10);
+    --stroke: rgba(255,255,255,0.16);
+    --ink: rgba(255,255,255,0.92);
+    --muted: rgba(255,255,255,0.68);
+
+    --a:#a7cbd9;   /* original accent */
+    --b:#6faec7;
+    --c:#b3ffb3;   /* pulse green */
+    --d:#a88bff;   /* cyber purple */
+}
+
+*{ box-sizing: border-box; }
 
 body {
-    background-color: #f0eae3;
-    font-family: 'Arial', sans-serif;
-    text-align: center;
-    margin: 0; 
-    padding: 0; 
+    margin: 0;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
+    color: var(--ink);
+    background:
+        radial-gradient(1200px 700px at 20% 10%, rgba(168,139,255,0.20), transparent 60%),
+        radial-gradient(900px 600px at 80% 20%, rgba(167,203,217,0.18), transparent 60%),
+        radial-gradient(1000px 700px at 50% 90%, rgba(179,255,179,0.12), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+    overflow-x: hidden;
 }
 
+/* Subtle scan/grain overlay (no drop-shadows) */
+body::before{
+    content:"";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(90deg, rgba(255,255,255,0.015), rgba(255,255,255,0.015)),
+        repeating-linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px);
+    mix-blend-mode: overlay;
+    opacity: 0.45;
+}
+
+/* ===================================================== */
+/* ===================== TITLE TOP ===================== */
+/* ===================================================== */
 
 .title-top {
-    z-index: -1;
+    position: relative;
+    z-index: 0;
     font-size: 17vw;
-    font-weight: bold; 
-    color: white; 
+    font-weight: 900;
+    letter-spacing: 0.03em;
+    color: rgba(255,255,255,0.05);
     overflow: hidden;
+    user-select: none;
+    text-align: center;
+    line-height: 0.9;
+    margin-top: 1vh;
 }
+
+/* ===================================================== */
+/* ===================== CONTENT ======================= */
+/* ===================================================== */
 
 .content{
-    position: sticky;
-    display: block;
-    width: 100%;
-    height: 100%;
-    padding-bottom: 10%;
-    margin-top: -20%;
-    transition: margin-top 0.3s;
-    background-color: #ffffff;
-}
-
-.white{
-    z-index: -1;
-    position: fixed;
-    background-color: #fff;
-    margin-top: 50%;
-    width: 100%;
-    height: 100%;
-}
-
-#uploadButton, #downloadButton {
-    padding: 10px 20px;
-    font-size: 2em;
-    background-color: #a7cbd9;
-    border: none;
-    border-radius: 5px;
-    cursor: pointer;
-    color: white;
-}
-
-
-
-
-#previewContainer::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-image: repeating-linear-gradient(
-        -45deg,
-        rgba(0, 0, 0, 0),
-        rgba(0, 0, 0, 0) 10px,
-        rgba(128, 128, 128, 0.5) 10px,
-        rgba(128, 128, 128, 0.5) 20px
-    );
-    pointer-events: none;
+    position: relative;
     z-index: 1;
+    width: min(980px, 92vw);
+    margin: 0 auto;
+    margin-top: -20%;
+    padding: 28px 22px 34px;
+    border-radius: 22px;
+
+    background: linear-gradient(180deg, var(--glass2), var(--glass));
+    border: 1px solid var(--stroke);
+    backdrop-filter: blur(16px);
+
+    transition: margin-top 0.35s ease;
+    will-change: margin-top;
 }
 
-#previewContainer .preview-text {
+/* Page entrance animation (like old version: content slides into place) */
+.content.enter {
+    animation: slideIn 650ms cubic-bezier(.2,.9,.2,1) 1;
+}
+@keyframes slideIn{
+    from { transform: translateY(18px); opacity: 0.0; }
+    to   { transform: translateY(0);    opacity: 1.0; }
+}
+
+/* Decorative sigil glow layers (still no shadows) */
+.sigil {
     position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    color: rgba(128, 128, 128, 0.5);
-    font-size: 5em;
-    z-index: 2;
+    inset: -1px;
+    border-radius: 22px;
+    pointer-events: none;
+    background:
+        radial-gradient(600px 140px at 50% 0%, rgba(167,203,217,0.25), transparent 70%),
+        radial-gradient(500px 120px at 30% 100%, rgba(168,139,255,0.18), transparent 70%),
+        radial-gradient(380px 110px at 80% 85%, rgba(179,255,179,0.10), transparent 70%);
+    mask-image: linear-gradient(180deg, rgba(0,0,0,0.65), rgba(0,0,0,0.15));
+    opacity: 0.9;
 }
 
-#previewContainer {
-            position: relative;
-            width: 700px;
-            height: 200px;
-            margin: auto;
-            margin-top: 3%;
-            margin-bottom: 1%;
-            background-color: #fff;
-            border: 1px solid #ddd;
-            display: none; /* Initially hidden */
-        }
-
-.partition-preview {
-    position: absolute;
-    width: 200px;
-    height: 200px;
-    border-left: 50px solid white;
-    background-color: #ddd;
-}
-
-.partition-preview:nth-child(2) { left: 250px; }
-.partition-preview:nth-child(3) { left: 500px; }
-
-#previewContainer img {
-    width: 100%;
-    height: auto;
-    z-index: 0;
-}
-
-
-
-
+/* ===================================================== */
+/* ================== DROP ZONE ======================== */
+/* ===================================================== */
 
 .drop-zone {
     position: relative;
-    border: 2px dashed #a7cbd9;
-    padding: 20px;
-    margin: 5%;
+    border-radius: 18px;
+    padding: 28px 18px;
+    margin: 18px auto 10px;
+    border: 1px dashed rgba(167,203,217,0.55);
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(10px);
     cursor: pointer;
     overflow: hidden;
 }
 
+/* IMPORTANT: the file input covers the whole zone so click/drop works anywhere */
+.drop-zone input[type="file"]{
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+}
+
+/* Text inside drop zone */
+.drop-hint{
+    display: grid;
+    gap: 10px;
+    justify-items: center;
+    padding: 10px 0;
+}
+
+.drop-hint .kicker{
+    font-size: 0.95rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+}
+
+.drop-hint .cta{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.14);
+    background: linear-gradient(135deg, rgba(167,203,217,0.18), rgba(168,139,255,0.12));
+}
+
+/* Drag over scan effect */
 .drop-zone.over::before {
     content: '';
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width:88%;
-    height: 88%;
-    border: 2px dotted #a7cbd9;
-    border-radius: 10px;
-    animation: fadeAndPulse 2s infinite alternate;
-    transform: translate(-50%, -50%);
+    inset: 0;
+    background:
+        radial-gradient(900px 220px at 50% 10%, rgba(179,255,179,0.16), transparent 70%),
+        linear-gradient(90deg, transparent, rgba(167,203,217,0.12), transparent);
+    animation: sweep 1.1s linear infinite;
+    pointer-events: none;
+}
+@keyframes sweep{
+    0%   { transform: translateX(-25%); opacity: 0.55; }
+    50%  { transform: translateX(0%);   opacity: 0.80; }
+    100% { transform: translateX(25%);  opacity: 0.55; }
 }
 
-.drop-zone.over::after {
-    content: '';
-    opacity: 0;
+.drop-zone.over{
+    border-color: rgba(179,255,179,0.75);
+}
+
+/* ===================================================== */
+/* ===================== BUTTONS ======================= */
+/* ===================================================== */
+
+/* IMPORTANT: NEVER use drop shadows on buttons */
+#downloadButton {
+    padding: 12px 18px;
+    font-size: 1rem;
+    font-weight: 700;
+    border: 1px solid rgba(255,255,255,0.16);
+    border-radius: 14px;
+    background: linear-gradient(135deg, rgba(167,203,217,0.26), rgba(111,174,199,0.18));
+    color: var(--ink);
+    cursor: pointer;
+
+    box-shadow: none !important;
+    filter: none !important;
+
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+#downloadButton:hover{
+    transform: translateY(-1px);
+    border-color: rgba(167,203,217,0.55);
+    background: linear-gradient(135deg, rgba(167,203,217,0.32), rgba(168,139,255,0.16));
+}
+
+#downloadButton:disabled{
+    opacity: 0.65;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===================================================== */
+/* ===================== PREVIEW ======================= */
+/* ===================================================== */
+
+#previewContainer {
+    position: relative;
+    width: min(900px, 92vw);
+    margin: 18px auto 10px;
+    padding: 14px;
+    border-radius: 18px;
+    border: 1px solid rgba(255,255,255,0.12);
+    background: rgba(255,255,255,0.03);
+    backdrop-filter: blur(10px);
+    display: none; /* Initially hidden */
+    justify-content: center;
+    align-items: center;
+    gap: 10px;
+    overflow: hidden;
+}
+
+/* Diagonal hatch overlay */
+#previewContainer::after{
+    content:'';
+    position:absolute;
+    inset:0;
+    background-image: repeating-linear-gradient(
+        -45deg,
+        rgba(255,255,255,0.00),
+        rgba(255,255,255,0.00) 12px,
+        rgba(255,255,255,0.06) 12px,
+        rgba(255,255,255,0.06) 18px
+    );
+    pointer-events:none;
+    opacity: 0.45;
+}
+
+/* Clickable preview wrapper */
+.preview-tile {
+    position: relative;
+    display: inline-flex;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.12);
+    overflow: hidden;
+    cursor: pointer;
+    user-select: none;
+
+    /* no shadow */
+    box-shadow: none;
+    background: rgba(255,255,255,0.02);
+
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.preview-tile:hover{
+    transform: translateY(-1px);
+    border-color: rgba(179,255,179,0.45);
+    background: rgba(255,255,255,0.04);
+}
+
+/* Tiny hint overlay shown on hover */
+.preview-tile::after{
+    content: "Télécharger";
     position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 80%;
-    height: 80%;
-    border: 2px dotted #a7cbd9;
-    border-radius: 10px;
-    animation: pulse 2s infinite alternate;
-    transform: translate(-50%, -50%);
-    animation: fadeAndPulse 2s infinite alternate;
-    transform: translate(-50%, -50%);
-    animation-delay: 0.5s;
-}
-
-@keyframes fadeAndPulse {
-    0%, 100% {
-        opacity: 0;
-        transform: translate(-50%, -50%) scale(1);
-        border-color: #a7cbd9;
-    }
-    100% {
-        opacity: 1;
-        transform: translate(-50%, -50%) scale(1.1);
-        border-color: #b3ffb3;
-    }
-}
-
-.hidden {
+    right: 10px;
+    bottom: 10px;
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255,255,255,0.16);
+    background: rgba(10,13,22,0.55);
+    color: rgba(255,255,255,0.90);
     opacity: 0;
-    transition: opacity 0.3s ease;
+    transform: translateY(4px);
+    transition: opacity 160ms ease, transform 160ms ease;
+    pointer-events: none;
 }
 
+.preview-tile:hover::after{
+    opacity: 1;
+    transform: translateY(0);
+}
 
+/* Preview images */
+#previewContainer img {
+    height: 200px;
+    display: block;
 
+    /* no shadow */
+    box-shadow: none;
+}
 
+/* ===================================================== */
+/* ================= DOWNLOAD LINK ===================== */
+/* ===================================================== */
+
+.download-container{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    margin-top: 14px;
+}
+
+/* Styled download link - still no shadows */
+.download-link{
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+
+    padding: 12px 18px;
+    border-radius: 14px;
+    border: 1px solid rgba(255,255,255,0.16);
+    text-decoration: none;
+    color: var(--ink);
+    background: linear-gradient(135deg, rgba(168,139,255,0.18), rgba(167,203,217,0.20));
+    box-shadow: none !important;
+    filter: none !important;
+
+    transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.download-link:hover{
+    transform: translateY(-1px);
+    border-color: rgba(179,255,179,0.50);
+    background: linear-gradient(135deg, rgba(179,255,179,0.14), rgba(167,203,217,0.22));
+}
+
+/* ===================================================== */
+/* ===================== SMALL TEXT ==================== */
+/* ===================================================== */
+
+.helper{
+    margin-top: 10px;
+    color: var(--muted);
+    font-size: 0.95rem;
+}
     </style>
-
-
 </head>
 
 <body>
     <div class="title-top">INSTACUT</div>
+
     <div class="content">
+        <div class="sigil"></div>
+
+        <!-- Drag & drop zone for image upload -->
+        <!-- IMPORTANT: the input covers the whole zone (opacity 0) so you can drop anywhere -->
         <div class="drop-zone" id="dropZone">
+            <div class="drop-hint">
+                <div class="cta">
+                    <span>Dépose une image ici</span>
+                    <span style="opacity:.7">ou clique</span>
+                </div>
+                <div class="kicker">Découpe en 3 posts (anti-zoom grille Instagram)</div>
+            </div>
             <input type="file" id="uploadButton" accept="image/*" />
         </div>
 
-        <button id="downloadButton" onclick="downloadZip()" style="display: none;">Télécharger les différentes parties</button>
+        <div class="helper">
+            Tu peux aussi cliquer directement sur chaque preview pour télécharger le PNG correspondant.
+        </div>
+
+        <!-- Button used to generate the ZIP file -->
+        <button id="downloadButton" style="display: none;">Générer le ZIP</button>
+
+        <!-- Container that will display preview images -->
         <div id="previewContainer"></div>
 
+        <!-- Container that will receive the real download link -->
+        <div class="download-container" id="downloadContainer"></div>
     </div>
-</body>
 
 <script>
-
 document.addEventListener('DOMContentLoaded', function() {
+
     // Selecting elements from the DOM
     const content = document.querySelector('.content');
     const dropZone = document.getElementById('dropZone');
     const uploadButton = document.getElementById('uploadButton');
     const previewContainer = document.getElementById('previewContainer');
     const downloadButton = document.getElementById('downloadButton');
-    let zip = new JSZip(); // Initializing JSZip for creating ZIP files
+    const downloadContainer = document.getElementById('downloadContainer');
 
-    // Initial animation for the page content
+    // Initializing JSZip for creating ZIP files
+    let zip = new JSZip();
+
+    // Keep the latest generated blobs so previews can download without ZIP
+    let latestParts = []; // [{ index: 1..3, blob: Blob, filename: string }]
+
+    // Initial animation for the page content (same spirit as your old version)
     setTimeout(function() {
+        content.classList.add('enter');
         content.style.marginTop = '-8%';
-    }, 100);
+    }, 80);
 
     // Event handlers for drag & drop functionality
     dropZone.addEventListener('dragover', (e) => {
@@ -223,12 +420,10 @@ document.addEventListener('DOMContentLoaded', function() {
         e.preventDefault();
         e.dataTransfer.dropEffect = 'copy'; // Indicate a copy action on dragover
         dropZone.classList.add('over'); // Add styling class for dragover
-        uploadButton.classList.add('hidden'); // Hide the upload button on dragover
     });
 
     dropZone.addEventListener('dragleave', () => {
         dropZone.classList.remove('over'); // Remove styling class when drag leaves
-        uploadButton.classList.remove('hidden'); // Show the upload button again
     });
 
     // Handling the drop event
@@ -236,7 +431,6 @@ document.addEventListener('DOMContentLoaded', function() {
         e.stopPropagation();
         e.preventDefault();
         dropZone.classList.remove('over');
-        uploadButton.classList.remove('hidden');
 
         const files = e.dataTransfer.files;
         if (files.length > 0) {
@@ -254,11 +448,59 @@ document.addEventListener('DOMContentLoaded', function() {
     // Function to process the file
     function processFile(file) {
         partitionImage(file); // Partition the image
-        downloadButton.style.display = 'none'; // Hide the download button initially
-        previewContainer.innerHTML = ''; // Clear the preview container
-        previewContainer.style.display = 'none'; // Hide the preview container initially
+        downloadButton.style.display = 'inline-block'; // Show download button after processing starts
+
+        // Reset UI & data for a new file
+        previewContainer.innerHTML = '';
+        previewContainer.style.display = 'none';
+        downloadContainer.innerHTML = '';
         zip = new JSZip(); // Reset the zip file
+        latestParts = []; // Reset the direct-download parts list
     }
+
+    /* ===================================================== */
+    /* ================ HELPERS (ANTI-ZOOM) ================= */
+    /* ===================================================== */
+
+    // Draw an image with a "cover" strategy (like CSS background-size: cover)
+    // so we never get black bars, and we always fill the full target area.
+    function drawCover(ctx, img, dx, dy, dw, dh) {
+        const sw = img.width;
+        const sh = img.height;
+
+        const scale = Math.max(dw / sw, dh / sh); // cover
+        const cw = dw / scale;
+        const ch = dh / scale;
+
+        const sx = (sw - cw) / 2;
+        const sy = (sh - ch) / 2;
+
+        ctx.drawImage(img, sx, sy, cw, ch, dx, dy, dw, dh);
+    }
+
+    // Download a Blob by creating a temporary object URL and clicking a hidden link.
+    // This is used for direct download when clicking a preview tile.
+    function downloadBlob(blob, filename) {
+        const url = URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+
+        // Trigger the download
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+
+        // Revoke the URL later to free memory
+        setTimeout(function() {
+            URL.revokeObjectURL(url);
+        }, 60000);
+    }
+
+    /* ===================================================== */
+    /* ================== MAIN PARTITION ==================== */
+    /* ===================================================== */
 
     // Function to partition the image and set up previews
     function partitionImage(file) {
@@ -266,80 +508,178 @@ document.addEventListener('DOMContentLoaded', function() {
         reader.onload = function(e) {
             const img = new Image();
             img.onload = function() {
-                const partWidth = Math.round(img.width / 3); // Calculate width for each partition
-                const scaleFactor = 200 / img.height; // Calculate scale factor based on desired height
 
-                previewContainer.innerHTML = ''; // Clear existing previews
-                previewContainer.style.display = 'flex'; // Display the container as flex
-                previewContainer.style.alignItems = 'center';
-                previewContainer.style.justifyContent = 'center';
+                // Instagram post recommended size (portrait)
+                // 1080x1350 = 4:5
+                const TILE_W = 1080;
+                const TILE_H = 1350;
 
-                // Loop through each partition
+                // Instagram grid preview is often cropped narrower than the post
+                // Commonly approximated as 1013x1350 visible area (3:4 preview),
+                // meaning IG crops ~33.5px on each side (total ~67px) of a 1080px wide tile.
+                const VISIBLE_W = 1013;
+                const BLEED = (TILE_W - VISIBLE_W) / 2; // ~33.5px
+
+                // Our "master" visible banner is 3 tiles wide (visible area only)
+                const MASTER_W = VISIBLE_W * 3;
+                const MASTER_H = TILE_H;
+
+                // 1) Build the master canvas (the visible area across the 3 tiles)
+                const masterCanvas = document.createElement('canvas');
+                const mctx = masterCanvas.getContext('2d');
+                masterCanvas.width = MASTER_W;
+                masterCanvas.height = MASTER_H;
+
+                // Fill master with cover to guarantee full width/height without bars
+                drawCover(mctx, img, 0, 0, MASTER_W, MASTER_H);
+
+                // Prepare preview UI
+                previewContainer.innerHTML = '';
+                previewContainer.style.display = 'flex';
+
+                // 2) For each tile, we export 1080x1350 but centered on the corresponding visible slice
                 for (let i = 0; i < 3; i++) {
-                    if (i > 0) {
-                        // Add a spacer div for margin between previews
-                        const spacer = document.createElement('div');
-                        spacer.style.width = '10px'; // Set spacer width
-                        previewContainer.appendChild(spacer);
-                    }
 
                     const canvas = document.createElement('canvas');
                     const ctx = canvas.getContext('2d');
-                    canvas.width = partWidth; // Set canvas width to partition width
-                    canvas.height = img.height; // Set canvas height to image height
+                    canvas.width = TILE_W;
+                    canvas.height = TILE_H;
 
-                    // Draw the image partition on the canvas
-                    ctx.drawImage(img, partWidth * i, 0, partWidth, img.height, 0, 0, partWidth, img.height);
+                    // We want the visible slice to be centered in the 1080 tile
+                    // Visible slice for tile i is [i*VISIBLE_W, (i+1)*VISIBLE_W]
+                    // So we start extraction at i*VISIBLE_W - BLEED to include margins (bleed)
+                    const sx = (i * VISIBLE_W) - BLEED;
+
+                    // Clamp to keep the sampling area inside the master canvas
+                    const clampedSx = Math.max(0, Math.min(MASTER_W - TILE_W, sx));
+
+                    // Draw the extracted region into the output tile
+                    ctx.drawImage(
+                        masterCanvas,
+                        clampedSx, 0, TILE_W, TILE_H,
+                        0, 0, TILE_W, TILE_H
+                    );
 
                     // Convert canvas to an image for preview
-                    const dataURL = canvas.toDataURL();
+                    const dataURL = canvas.toDataURL('image/png');
                     const previewImg = new Image();
                     previewImg.src = dataURL;
-                    previewImg.style.height = '200px'; // Set height for preview
-                    previewImg.style.width = `${partWidth * scaleFactor}px`; // Scale width to maintain aspect ratio
-                    previewContainer.appendChild(previewImg); // Add preview image to container
 
-                    // Add the canvas content to the ZIP file
+                    // Wrap preview image so it becomes clickable and styled
+                    const wrap = document.createElement('div');
+                    wrap.className = "preview-tile";
+                    wrap.appendChild(previewImg);
+
+                    // When clicking the preview tile, download the PNG directly
+                    // We use the real blob generated from the canvas to keep quality & filename.
+                    const filename = `partition_${i + 1}.png`;
+
+                    // Add the canvas content to the ZIP file + store blob for direct download
                     canvas.toBlob(function(blob) {
-                        zip.file(`partition_${i + 1}.png`, blob);
-                    }, 'image/png');
-                }
 
-                downloadButton.style.display = 'inline-block'; // Show download button after processing
+                        // Store part for direct download
+                        latestParts.push({
+                            index: i + 1,
+                            blob: blob,
+                            filename: filename
+                        });
+
+                        // Add part to ZIP
+                        zip.file(filename, blob);
+
+                        // Click handler downloads this part
+                        wrap.addEventListener('click', function() {
+                            downloadBlob(blob, filename);
+                        });
+
+                    }, 'image/png');
+
+                    // Add preview tile to container
+                    previewContainer.appendChild(wrap);
+                }
             };
-            img.src = e.target.result; // Read the file as an image source
+            img.src = e.target.result;
         };
         reader.readAsDataURL(file);
     }
 
-    // Function to download the ZIP file
+    /* ===================================================== */
+    /* ================== DOWNLOAD ZIP ===================== */
+    /* ===================================================== */
+
+    // Function to download the ZIP file (safer version)
+    // Instead of forcing an automatic download via saveAs(),
+    // we generate a real clickable <a download> link.
+    // This looks more like a normal user-initiated download
+    // and can reduce the chances of being flagged by SmartScreen / Safe Browsing.
     function downloadZip() {
-        zip.generateAsync({type: "blob"})
-            .then(function(content) {
-                saveAs(content, "partitions.zip"); // Trigger the download of the ZIP file
-            });
+
+        // Disable button while generating ZIP
+        downloadButton.disabled = true;
+        downloadButton.textContent = "Préparation du ZIP...";
+
+        // Generate ZIP as a Blob
+        // Using STORE (no compression) can slightly reduce suspicious patterns
+        zip.generateAsync({
+            type: "blob",
+            compression: "STORE"
+        }).then(function(blob) {
+
+            // Create an object URL for the generated ZIP
+            const url = URL.createObjectURL(blob);
+
+            // Remove previous download link if it exists
+            const existingLink = document.getElementById("zipDownloadLink");
+            if (existingLink) {
+                existingLink.remove();
+            }
+
+            // Create a real anchor element for download (styled via CSS)
+            const a = document.createElement("a");
+            a.id = "zipDownloadLink";
+            a.href = url;
+            a.download = "partitions.zip";
+            a.textContent = "Télécharger partitions.zip";
+            a.className = "download-link";
+
+            // Insert link in the dedicated container
+            downloadContainer.innerHTML = "";
+            downloadContainer.appendChild(a);
+
+            // Re-enable button
+            downloadButton.disabled = false;
+            downloadButton.textContent = "Générer le ZIP";
+
+            // Revoke object URL after 60 seconds to free memory
+            setTimeout(function() {
+                URL.revokeObjectURL(url);
+            }, 60000);
+
+        }).catch(function(error) {
+
+            console.error("Erreur génération ZIP :", error);
+
+            downloadButton.disabled = false;
+            downloadButton.textContent = "Générer le ZIP";
+
+            alert("Erreur lors de la génération du ZIP.");
+        });
     }
 
     // Event listener for download button
+    // The button now prepares the ZIP and displays the real download link.
     downloadButton.addEventListener('click', downloadZip);
 
     // Event listener for window scroll
+    // Keeps a similar "moving content" vibe like your old version.
     window.addEventListener('scroll', function() {
-        // Calculate the scroll percentage relative to the window height
         let scrollPercentage = window.scrollY / window.innerHeight;
-
-        // Dynamically adjust the top margin of the content based on the scroll percentage
         let newMarginTop = -8 - (scrollPercentage * 12);
         newMarginTop = Math.max(-20, Math.min(-3, newMarginTop));
-        
-        // Apply the calculated top margin to the content element
         content.style.marginTop = newMarginTop + '%';
     });
+
 });
-
-
-
-    </script>
+</script>
 </body>
 </html>
-
