@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Free Instagram grid splitter. Split one image into three 1080x1350 (4:5) aligned posts. Prevent Instagram square crop misalignment in your profile grid." />
   <meta name="keywords" content="instagram grid splitter, instagram 3 post grid, instagram 4:5 split, instagram seamless grid tool, instagram crop fix" />
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200&display=swap" rel="stylesheet">
+  
   <title>INSTACUT</title>
 
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
@@ -121,27 +126,25 @@ body::before{
   left: 50%;
   top: 86%;
   transform: translate(-50%, -50%);
-  width: 34px;
-  height: 34px;
-  border-radius: 999px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.03);
-  backdrop-filter: blur(10px);
   opacity: 0;
   will-change: transform, opacity;
   z-index: 6;
   pointer-events: none;
 }
+
 .scroll-hint::before{
-  content:"v";
+  content: "⌄";
   position: absolute;
   left: 50%;
   top: 50%;
   transform: translate(-50%, -55%);
-  font-weight: 900;
-  letter-spacing: 0.02em;
-  color: rgba(255,255,255,0.75);
+  font-family: 'Inter', sans-serif;
+  font-weight: 100;  
+  font-size: 28px;   
+  letter-spacing: 0.05em;   
+  color: rgba(255,255,255,0.65);
 }
+
 @keyframes hintPulse{
   0%   { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
   16%  { opacity: 0.55; }
