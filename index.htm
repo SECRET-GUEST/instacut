@@ -3,36 +3,36 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Free Instagram grid splitter. Split one image into three 1080x1350 (4:5) aligned posts. Prevent Instagram square crop misalignment in your profile grid." />
+  <meta name="keywords" content="instagram grid splitter, instagram 3 post grid, instagram 4:5 split, instagram seamless grid tool, instagram crop fix" />
   <title>INSTACUT</title>
 
-  <!-- JSZip library for creating ZIP files -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
 
   <style>
-/* ===================================================== */
-/* ===================== GLOBAL ======================== */
-/* ===================================================== */
-
 :root{
   --bg0:#07070b;
   --bg1:#0a0d16;
+
   --glass: rgba(255,255,255,0.06);
   --glass2: rgba(255,255,255,0.10);
   --stroke: rgba(255,255,255,0.16);
   --ink: rgba(255,255,255,0.92);
   --muted: rgba(255,255,255,0.68);
 
-  --a:#a7cbd9;   /* original accent */
+  --a:#a7cbd9;
   --b:#6faec7;
-  --c:#b3ffb3;   /* pulse green */
-  --d:#a88bff;   /* cyber purple */
+  --c:#b3ffb3;
+  --d:#a88bff;
+
+  --gap: 18px;
 }
 
-*{ box-sizing: border-box; }
+*{ box-sizing:border-box; }
+html, body{ height:100%; }
 
-body {
-  margin: 0;
-  min-height: 100vh;
+body{
+  margin:0;
   font-family: Arial, sans-serif;
   color: var(--ink);
   background:
@@ -40,10 +40,9 @@ body {
     radial-gradient(900px 600px at 80% 20%, rgba(167,203,217,0.18), transparent 60%),
     radial-gradient(1000px 700px at 50% 90%, rgba(179,255,179,0.12), transparent 60%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
-/* Subtle scan/grain overlay (no drop-shadows) */
 body::before{
   content:"";
   position: fixed;
@@ -56,56 +55,53 @@ body::before{
   opacity: 0.45;
 }
 
-/* ===================================================== */
-/* ===================== TITLE TOP ===================== */
-/* ===================================================== */
+#inputLayer{
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: transparent;
+}
 
-.title-top {
-  position: relative;
-  z-index: 0;
+.stage{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* Title */
+.title-top{
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  transform: translate(-50%, -50%) translateY(140vh);
   font-size: 17vw;
   font-weight: 900;
   letter-spacing: 0.03em;
   color: rgba(255,255,255,0.05);
-  overflow: hidden;
   user-select: none;
-  text-align: center;
   line-height: 0.9;
-  margin-top: 1vh;
+  will-change: transform, opacity;
+  z-index: 1;
 }
 
-/* ===================================================== */
-/* ===================== CONTENT ======================= */
-/* ===================================================== */
-
+/* Main box */
 .content{
-  position: relative;
-  z-index: 1;
+  position: absolute;
+  left: 50%;
+  top: 56%;
+  transform: translate(-50%, -50%) translateY(140vh) scale(0.98);
   width: min(980px, 92vw);
-  margin: 0 auto;
-  margin-top: -20%;
   padding: 28px 22px 34px;
   border-radius: 22px;
-
   background: linear-gradient(180deg, var(--glass2), var(--glass));
   border: 1px solid var(--stroke);
   backdrop-filter: blur(16px);
-
-  transition: margin-top 0.35s ease;
-  will-change: margin-top;
+  will-change: transform, opacity;
+  z-index: 3;
+  pointer-events: auto;
 }
 
-/* Page entrance animation: content slides into place */
-.content.enter {
-  animation: slideIn 650ms cubic-bezier(.2,.9,.2,1) 1;
-}
-@keyframes slideIn{
-  from { transform: translateY(18px); opacity: 0.0; }
-  to   { transform: translateY(0);    opacity: 1.0; }
-}
-
-/* Decorative sigil glow layers (still no shadows) */
-.sigil {
+.sigil{
   position: absolute;
   inset: -1px;
   border-radius: 22px;
@@ -118,39 +114,222 @@ body::before{
   opacity: 0.9;
 }
 
+/* Hint */
+.scroll-hint{
+  position: absolute;
+  left: 50%;
+  top: 86%;
+  transform: translate(-50%, -50%);
+  width: 34px;
+  height: 34px;
+  border-radius: 999px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+  opacity: 0;
+  will-change: transform, opacity;
+  z-index: 6;
+  pointer-events: none;
+}
+.scroll-hint::before{
+  content:"v";
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -55%);
+  font-weight: 900;
+  letter-spacing: 0.02em;
+  color: rgba(255,255,255,0.75);
+}
+@keyframes hintPulse{
+  0%   { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
+  16%  { opacity: 0.55; }
+  35%  { transform: translate(-50%, -48%) scale(1.02); opacity: 0.85; }
+  60%  { transform: translate(-50%, -51%) scale(0.99); opacity: 0.75; }
+  100% { transform: translate(-50%, -50%) scale(0.94); opacity: 0; }
+}
+.scroll-hint.play{ animation: hintPulse 900ms cubic-bezier(.2,.9,.2,1) 1; }
 
-.publish-warning{
-  margin: 14px auto 4px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(179,255,179,0.35);
-  background: linear-gradient(
-    135deg,
-    rgba(179,255,179,0.08),
-    rgba(167,203,217,0.08)
-  );
-  font-size: 0.9rem;
-  line-height: 1.5;
+/* Features panel */
+.features{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--bg1), var(--bg0));
+  border-top: 1px solid var(--stroke);
+  transform: translateY(140%);
+  will-change: transform;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.features-glow{
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background:
+    radial-gradient(800px 200px at 50% 0%, rgba(167,203,217,0.15), transparent 70%),
+    radial-gradient(600px 180px at 20% 100%, rgba(168,139,255,0.12), transparent 70%),
+    radial-gradient(500px 160px at 80% 90%, rgba(179,255,179,0.08), transparent 70%);
+  opacity: 0.65;
+  transform: translateY(14px);
+  will-change: transform, opacity;
+}
+
+.features-inner{
+  position: relative;
+  height: 100%;
+  width: 100%;
+}
+
+.features-content{
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 3.0rem 2rem 2.0rem;
+  height: calc(100% - 84px);
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+  z-index: 1;
+}
+
+.f-main, .f-grid, .f-keys{
+  opacity: 0;
+  transform: translateY(26px);
+  will-change: transform, opacity;
+}
+
+.f-main h2{
+  font-size: 1.4rem;
+  font-weight: 700;
+  margin: 0 0 1rem;
+  background: linear-gradient(120deg, var(--a), var(--b), var(--c), var(--d));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+}
+
+.f-main p{
   color: var(--muted);
+  line-height: 1.7;
+  margin: 0 0 2.2rem;
+  font-size: 0.95rem;
+}
+
+.f-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.5rem;
+  margin-bottom: 2.2rem;
+}
+
+.f-col h3{
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 1rem;
+  opacity: 0.9;
+}
+
+.feature-tag{
+  display:inline-block;
+  padding: 6px 12px;
+  margin: 4px 6px 4px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  font-size: 0.85rem;
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+}
+.feature-tag:hover{
+  border-color: rgba(167,203,217,0.35);
+  background: rgba(167,203,217,0.08);
+  transform: translateY(-1px);
+}
+
+.step{
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.step:last-child{ border-bottom: none; }
+
+.f-keys{
+  padding: 1.2rem 1.5rem;
+  margin: 1.8rem 0 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.50);
+  font-size: 0.8rem;
+  line-height: 1.8;
   text-align: center;
+}
+
+.fake-footer{
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  width: 100%;
+  height: 84px;
+  border-top: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.10);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding: 0 16px;
 
   opacity: 0;
-  transform: translateX(-40px);
-  transition: transform 400ms cubic-bezier(.2,.9,.2,1), 
-              opacity 400ms ease;
+  transform: translateY(12px);
+  will-change: transform, opacity;
+  pointer-events: auto;
 }
 
-.publish-warning.show{
-  opacity: 1;
-  transform: translateX(0);
+.fake-footer-inner{
+  width: min(980px, 92vw);
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 14px;
+  flex-wrap: wrap;
 }
 
+.ff-left{
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
 
-/* ===================================================== */
-/* ================== DROP ZONE ======================== */
-/* ===================================================== */
+.ff-links{
+  display:flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+}
 
-.drop-zone {
+.fake-footer a{
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  padding-bottom: 2px;
+}
+.fake-footer a:hover{
+  border-bottom-color: rgba(179,255,179,0.55);
+}
+
+/* Tool UI */
+.drop-zone{
   position: relative;
   border-radius: 18px;
   padding: 28px 18px;
@@ -161,66 +340,35 @@ body::before{
   cursor: pointer;
   overflow: hidden;
 }
-
-/* The file input covers the whole zone so click/drop works anywhere */
-.drop-zone input[type="file"]{
-  position: absolute;
-  inset: 0;
-  opacity: 0;
-  cursor: pointer;
-}
-
-/* Drop zone text */
-.drop-hint{
-  display: grid;
-  gap: 10px;
-  justify-items: center;
-  padding: 10px 0;
-}
-
-.drop-hint .kicker{
-  font-size: 0.95rem;
-  color: var(--muted);
-  letter-spacing: 0.02em;
-}
-
+.drop-zone input[type="file"]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+.drop-hint{ display:grid; gap:10px; justify-items:center; padding:10px 0; }
+.drop-hint .kicker{ font-size:0.95rem; color:var(--muted); letter-spacing:0.02em; }
 .drop-hint .cta{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
+  display:inline-flex; align-items:center; gap:10px;
   padding: 12px 18px;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.14);
+  border-radius:14px;
+  border:1px solid rgba(255,255,255,0.14);
   background: linear-gradient(135deg, rgba(167,203,217,0.18), rgba(168,139,255,0.12));
 }
-
-/* Drag-over scan effect */
-.drop-zone.over::before {
-  content: '';
-  position: absolute;
-  inset: 0;
+.drop-zone.over::before{
+  content:'';
+  position:absolute; inset:0;
   background:
     radial-gradient(900px 220px at 50% 10%, rgba(179,255,179,0.16), transparent 70%),
     linear-gradient(90deg, transparent, rgba(167,203,217,0.12), transparent);
   animation: sweep 1.1s linear infinite;
-  pointer-events: none;
+  pointer-events:none;
 }
 @keyframes sweep{
   0%   { transform: translateX(-25%); opacity: 0.55; }
   50%  { transform: translateX(0%);   opacity: 0.80; }
   100% { transform: translateX(25%);  opacity: 0.55; }
 }
+.drop-zone.over{ border-color: rgba(179,255,179,0.75); }
 
-.drop-zone.over{
-  border-color: rgba(179,255,179,0.75);
-}
+.zip-button-wrapper{ width:100%; display:flex; justify-content:center; margin-top:14px; }
 
-/* ===================================================== */
-/* ===================== BUTTONS ======================= */
-/* ===================================================== */
-
-/* Buttons intentionally avoid drop shadows */
-#downloadButton {
+#downloadButton{
   padding: 12px 18px;
   font-size: 1rem;
   font-weight: 700;
@@ -229,37 +377,16 @@ body::before{
   background: linear-gradient(135deg, rgba(167,203,217,0.26), rgba(111,174,199,0.18));
   color: var(--ink);
   cursor: pointer;
-
-  box-shadow: none !important;
-  filter: none !important;
-
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
-
 #downloadButton:hover{
   transform: translateY(-1px);
   border-color: rgba(167,203,217,0.55);
   background: linear-gradient(135deg, rgba(167,203,217,0.32), rgba(168,139,255,0.16));
 }
+#downloadButton:disabled{ opacity:0.65; cursor:not-allowed; transform:none; }
 
-#downloadButton:disabled{
-  opacity: 0.65;
-  cursor: not-allowed;
-  transform: none;
-}
-
-.zip-button-wrapper{
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 14px;
-}
-
-/* ===================================================== */
-/* ===================== PREVIEW ======================= */
-/* ===================================================== */
-
-#previewContainer {
+#previewContainer{
   position: relative;
   width: min(900px, 92vw);
   margin: 18px auto 10px;
@@ -268,14 +395,12 @@ body::before{
   border: 1px solid rgba(255,255,255,0.12);
   background: rgba(255,255,255,0.03);
   backdrop-filter: blur(10px);
-  display: none; /* Initially hidden */
+  display: none;
   justify-content: center;
   align-items: center;
   gap: 10px;
   overflow: hidden;
 }
-
-/* Diagonal hatch overlay */
 #previewContainer::after{
   content:'';
   position:absolute;
@@ -290,9 +415,7 @@ body::before{
   pointer-events:none;
   opacity: 0.45;
 }
-
-/* Clickable preview wrapper */
-.preview-tile {
+.preview-tile{
   position: relative;
   display: inline-flex;
   border-radius: 14px;
@@ -300,20 +423,14 @@ body::before{
   overflow: hidden;
   cursor: pointer;
   user-select: none;
-
-  box-shadow: none;
   background: rgba(255,255,255,0.02);
-
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
-
 .preview-tile:hover{
   transform: translateY(-1px);
   border-color: rgba(179,255,179,0.45);
   background: rgba(255,255,255,0.04);
 }
-
-/* Tiny hint overlay shown on hover */
 .preview-tile::after{
   content: "Download";
   position: absolute;
@@ -330,133 +447,493 @@ body::before{
   transition: opacity 160ms ease, transform 160ms ease;
   pointer-events: none;
 }
+.preview-tile:hover::after{ opacity: 1; transform: translateY(0); }
+#previewContainer img{ height: 200px; display: block; }
 
-.preview-tile:hover::after{
-  opacity: 1;
-  transform: translateY(0);
+.publish-warning{
+  margin: 14px auto 4px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1px solid rgba(179,255,179,0.35);
+  background: linear-gradient(135deg, rgba(179,255,179,0.08), rgba(167,203,217,0.08));
+  font-size: 0.9rem;
+  line-height: 1.5;
+  color: var(--muted);
+  text-align: center;
+  opacity: 0;
+  transform: translateX(-40px);
+  transition: transform 400ms cubic-bezier(.2,.9,.2,1), opacity 400ms ease;
 }
+.publish-warning.show{ opacity: 1; transform: translateX(0); }
 
-/* Preview images */
-#previewContainer img {
-  height: 200px;
-  display: block;
-  box-shadow: none;
-}
-
-/* ===================================================== */
-/* ================= DOWNLOAD LINK ===================== */
-/* ===================================================== */
-
-.download-container{
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  margin-top: 14px;
-}
-
-/* Styled download link (no shadows) */
+.download-container{ width:100%; display:flex; justify-content:center; margin-top:14px; }
 .download-link{
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
   padding: 12px 18px;
   border-radius: 14px;
   border: 1px solid rgba(255,255,255,0.16);
-  text-decoration: none;
+  text-decoration:none;
   color: var(--ink);
   background: linear-gradient(135deg, rgba(168,139,255,0.18), rgba(167,203,217,0.20));
-  box-shadow: none !important;
-  filter: none !important;
-
   transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
 }
-
 .download-link:hover{
   transform: translateY(-1px);
   border-color: rgba(179,255,179,0.50);
   background: linear-gradient(135deg, rgba(179,255,179,0.14), rgba(167,203,217,0.22));
 }
 
-/* ===================================================== */
-/* ===================== SMALL TEXT ==================== */
-/* ===================================================== */
+.stage{
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  opacity: 1;
+  transition: opacity 0ms linear;
+  will-change: opacity;
+}
 
-.helper{
-  margin-top: 10px;
-  color: var(--muted);
-  font-size: 0.95rem;
+
+@media (max-width: 768px){
+  .features-content{ padding: 2.2rem 1.5rem 1.5rem; height: calc(100% - 92px); }
+  .f-main h2{ font-size: 1.2rem; }
+  .f-grid{ grid-template-columns: 1fr; gap: 2rem; }
+  .fake-footer{ height: 92px; }
+  .fake-footer-inner{ justify-content: center; }
+  .ff-links{ justify-content: center; }
 }
   </style>
 </head>
 
 <body>
-  <div class="title-top">INSTACUT</div>
+  <div id="inputLayer" aria-hidden="true"></div>
 
-  <div class="content">
-    <div class="sigil"></div>
+  <div class="stage">
+    <div class="title-top" id="titleTop">INSTACUT</div>
 
-    <!-- Drag & drop zone for image upload -->
-    <div class="drop-zone" id="dropZone">
-      <div class="drop-hint">
-        <div class="cta">
-          <span>Drop an image here</span>
-          <span style="opacity:.7">or click</span>
+    <div class="content" id="contentBox">
+      <div class="sigil"></div>
+
+      <div class="drop-zone" id="dropZone">
+        <div class="drop-hint">
+          <div class="cta">
+            <span>Drop an image here</span>
+            <span style="opacity:.7">or click</span>
+          </div>
+          <div class="kicker">Split into 3 posts (Instagram grid anti-zoom)</div>
         </div>
-        <div class="kicker">Split into 3 posts (Instagram grid anti-zoom)</div>
+        <input type="file" id="uploadButton" accept="image/*" />
       </div>
-      <input type="file" id="uploadButton" accept="image/*" />
+
+      <div class="zip-button-wrapper">
+        <button id="downloadButton" style="display:none;">Generate ZIP</button>
+      </div>
+
+      <div id="previewContainer"></div>
+
+      <div class="publish-warning" id="publishWarning">
+        ⚠️ Instagram defaults to square, tap ⤢ EXPAND when posting. ⚠️
+      </div>
+
+      <div class="download-container" id="downloadContainer"></div>
     </div>
 
-    <!-- Button used to generate the ZIP file -->
-    <div class="zip-button-wrapper">
-      <button id="downloadButton" style="display: none;">Generate ZIP</button>
+    <div class="scroll-hint" id="scrollHint" aria-hidden="true"></div>
+
+    <div class="features" id="featuresPanel">
+      <div class="features-glow" id="featuresGlow"></div>
+
+      <div class="features-inner">
+        <div class="features-content">
+          <div class="f-main" id="fMain">
+            <h2>INSTACUT · Free Instagram Grid Splitter</h2>
+            <p>
+              Split images into 3 seamless Instagram posts (1080×1350 4:5 tiles).
+              Compensates for Instagram's square crop to keep your panoramic grid perfectly aligned.
+              No watermark, works 100% in browser, privacy-friendly.
+            </p>
+          </div>
+
+          <div class="f-grid" id="fGrid">
+            <div class="f-col">
+              <h3>Features</h3>
+              <span class="feature-tag">Free panorama splitter</span>
+              <span class="feature-tag">3-tile grid layouts</span>
+              <span class="feature-tag">Anti-zoom alignment</span>
+              <span class="feature-tag">Instant preview</span>
+              <span class="feature-tag">ZIP download</span>
+              <span class="feature-tag">No upload needed</span>
+            </div>
+
+            <div class="f-col">
+              <h3>How to Use</h3>
+              <div class="step">1. Drop or upload image</div>
+              <div class="step">2. Preview 3-panel split</div>
+              <div class="step">3. Download tiles/ZIP</div>
+              <div class="step">4. Post in 4:5 format</div>
+              <div class="step">5. Tap ⤢ Expand on Instagram</div>
+            </div>
+          </div>
+
+          <div class="f-keys" id="fKeys">
+            Instagram grid splitter · panorama splitter · carousel maker · tiled posts ·
+            grid layout tool · 3-post panorama · feed planner · seamless grid · Instagram panoramic posts
+          </div>
+        </div>
+
+        <div class="fake-footer" id="fakeFooter">
+          <div class="fake-footer-inner">
+            <div class="ff-left">Links</div>
+            <div class="ff-links">
+              <a href="https://secret-guest.github.io/barcraft/" target="_blank" rel="noopener noreferrer">QR Code generator page</a>
+              <a href="https://github.com/SECRET-GUEST" target="_blank" rel="noopener noreferrer">Back to GitHub</a>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
-
-    <!-- Container that will display preview images -->
-    <div id="previewContainer"></div>
-
-    <div class="publish-warning" id="publishWarning">
-     ⚠️ Instagram defaults to square, tap ⤢ EXPAND when posting. ⚠️
-    </div>
-
-
-    <!-- Container that will receive the real download link -->
-    <div class="download-container" id="downloadContainer"></div>
   </div>
 
-  <script>
+<script>
 document.addEventListener('DOMContentLoaded', function() {
+  const inputLayer = document.getElementById('inputLayer');
 
-  // ==============================
-  // DOM references
-  // ==============================
-  const content = document.querySelector('.content');
+  const titleTop = document.getElementById('titleTop');
+  const content = document.getElementById('contentBox');
+  const scrollHint = document.getElementById('scrollHint');
+
+  const features = document.getElementById('featuresPanel');
+  const featuresGlow = document.getElementById('featuresGlow');
+
+  const fMain = document.getElementById('fMain');
+  const fGrid = document.getElementById('fGrid');
+  const fKeys = document.getElementById('fKeys');
+  const fakeFooter = document.getElementById('fakeFooter');
+
   const dropZone = document.getElementById('dropZone');
   const uploadButton = document.getElementById('uploadButton');
   const previewContainer = document.getElementById('previewContainer');
   const downloadButton = document.getElementById('downloadButton');
   const downloadContainer = document.getElementById('downloadContainer');
+  const publishWarning = document.getElementById('publishWarning');
 
-  // ==============================
-  // ZIP (JSZip)
-  // ==============================
+  function clamp01(x){ return Math.max(0, Math.min(1, x)); }
+  function lerp(a,b,t){ return a + (b-a)*t; }
+  function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
+  function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2; }
+
+  let LOOP = 2600;
+  function computeLoopLen(){
+    const vh = window.innerHeight;
+    LOOP = Math.max(2600, Math.round(vh * 3.2));
+  }
+
+  const WHEEL_SCALE = 0.16;
+  const TOUCH_SCALE = 0.20;
+  const KEY_STEP    = 85;
+
+  const MAX_IMPULSE = 85;
+  const FRICTION    = 0.86;
+  const RESPONSE    = 0.82;
+
+  let vScroll = 0;
+  let vVel = 0;
+
+  const HOLD_P_START = 0.70;
+  const HOLD_P_END   = 0.78;
+  const HOLD_U       = 0.74;
+
+  const CLEANUP_P_START = 0.95;
+
+  const FADE_P_START = 0.91;   
+  const FADE_P_END   = 0.95;   
+  const stageEl = document.querySelector('.stage');
+
+  function pFromScroll(){
+    const mod = ((vScroll % LOOP) + LOOP) % LOOP;
+    return mod / LOOP;
+  }
+
+  function mapProgressToU(p){
+    if (p <= HOLD_P_START) return p;
+    if (p >= HOLD_P_END){
+      const afterSpanP = 1 - HOLD_P_END;
+      const afterSpanU = 1 - HOLD_U;
+      const t = (p - HOLD_P_END) / afterSpanP;
+      return HOLD_U + t * afterSpanU;
+    }
+    return HOLD_U;
+  }
+
+  let introActive = true;
+  let introStart = performance.now();
+  const INTRO_MS = 850;
+
+  let lastP = 0;
+
+  let lastInputTime = performance.now();
+  let hintTimer = null;
+  let hintInterval = null;
+
+  function hideHint(){
+    scrollHint.classList.remove('play');
+    scrollHint.style.opacity = '0';
+  }
+
+  function playHint(){
+    const p = pFromScroll();
+    if (p > 0.30) return;
+    scrollHint.style.opacity = '1';
+    scrollHint.classList.remove('play');
+    void scrollHint.offsetWidth;
+    scrollHint.classList.add('play');
+    setTimeout(() => { hideHint(); }, 950);
+  }
+
+  function scheduleHint(){
+    if (hintTimer) clearTimeout(hintTimer);
+    hintTimer = setTimeout(() => {
+      playHint();
+      if (!hintInterval){
+        hintInterval = setInterval(() => {
+          const idle = performance.now() - lastInputTime;
+          if (idle >= 2900) playHint();
+        }, 3000);
+      }
+    }, 3000);
+  }
+
+  function markInput(){
+    lastInputTime = performance.now();
+    hideHint();
+    scheduleHint();
+  }
+
+  function renderWithU(u){
+    const vh = window.innerHeight;
+    const gapPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 18;
+
+    const panelIn = easeInOutCubic(clamp01((u - 0.26) / 0.28));
+    let panelYpct = lerp(140, 0, panelIn);
+
+    const panelOut = easeInOutCubic(clamp01((u - 0.82) / 0.18));
+    panelYpct = lerp(panelYpct, -140, panelOut);
+
+    features.style.transform = `translateY(${panelYpct}%)`;
+    featuresGlow.style.transform = `translateY(${lerp(14, -10, panelIn) + lerp(0, -10, panelOut)}px)`;
+
+    const titleEnter = easeOutCubic(clamp01((u - 0.02) / 0.26));
+    const titleExit  = easeInOutCubic(clamp01((u - 0.22) / 0.62));
+
+    let titleY = lerp(vh * 1.25, 0, titleEnter) + lerp(0, -vh * 1.25, titleExit);
+    const driftX = Math.sin(u * Math.PI * 2 * 0.9) * 18;
+    const driftY = Math.cos(u * Math.PI * 2 * 0.55) * 10;
+
+    const titleHide = easeInOutCubic(clamp01((u - 0.10) / 0.30));
+    let titleO = lerp(0.0, 1.0, titleEnter) * lerp(1.0, 0.55, titleHide);
+
+    const boxEnter = easeOutCubic(clamp01(u / 0.20));
+    const growPhase = easeInOutCubic(clamp01((u - 0.12) / 0.46));
+    const escapePhase = easeInOutCubic(clamp01((u - 0.66) / 0.18));
+
+    const trembleAmp = lerp(0.0, 3.2, growPhase) * (1.0 - escapePhase);
+    const freq = 16 + 30 * growPhase;
+    const jx = Math.sin((u * freq) * Math.PI * 2) * trembleAmp;
+    const jy = Math.cos((u * (freq * 0.83)) * Math.PI * 2) * (trembleAmp * 0.55);
+
+    const baseTop = vh * 0.56;
+    let centerY = lerp(baseTop + vh * 0.85, baseTop, boxEnter);
+
+    const micro = lerp(12, -10, easeInOutCubic(clamp01((u - 0.18) / 0.48)));
+    centerY += micro;
+
+    centerY += lerp(0, -55, panelIn);
+    centerY += lerp(0, -vh * 0.80, escapePhase);
+    centerY += jy;
+
+    let scale = lerp(0.96, 1.20, growPhase) * lerp(1.0, 0.88, escapePhase);
+
+    const panelTopPx = (panelYpct / 100) * vh;
+    const rect = content.getBoundingClientRect();
+    const h = rect.height * scale;
+    const maxCenterY = panelTopPx - (h / 2) - gapPx;
+    if (u > 0.30 && panelYpct < 120){
+      centerY = Math.min(centerY, maxCenterY);
+    }
+
+    let boxO = lerp(1.0, 0.0, easeInOutCubic(clamp01((u - 0.74) / 0.10)));
+
+    const inFeaturesHard = (u >= 0.78);
+    if (inFeaturesHard){
+      titleY = vh * 1.30;
+      titleO = 0.0;
+      centerY = baseTop + vh * 1.10;
+      boxO = 0.0;
+    }
+
+    titleTop.style.transform = `translate(-50%, -50%) translate3d(${driftX}px, ${titleY + driftY}px, 0)`;
+    titleTop.style.opacity = String(titleO);
+
+    content.style.opacity = String(boxO);
+    content.style.transform = `translate(-50%, -50%) translate3d(${jx}px, ${centerY - baseTop}px, 0) scale(${scale})`;
+
+    const a = easeOutCubic(clamp01((u - 0.46) / 0.10));
+    const b = easeOutCubic(clamp01((u - 0.52) / 0.12));
+    const c = easeOutCubic(clamp01((u - 0.60) / 0.12));
+
+    const fadeOut = easeInOutCubic(clamp01((u - 0.82) / 0.18));
+    const keep = 1.0 - fadeOut;
+
+    fMain.style.opacity = String(a * keep);
+    fMain.style.transform = `translateY(${(1 - a) * 26 + fadeOut * -36}px)`;
+
+    fGrid.style.opacity = String(b * keep);
+    fGrid.style.transform = `translateY(${(1 - b) * 26 + fadeOut * -36}px)`;
+
+    fKeys.style.opacity = String(c * keep);
+    fKeys.style.transform = `translateY(${(1 - c) * 26 + fadeOut * -36}px)`;
+
+    const ff = clamp01(panelIn * 1.08);
+    fakeFooter.style.opacity = String(ff * keep);
+    fakeFooter.style.transform = `translateY(${lerp(12, 0, ff) + fadeOut * -50}px)`;
+  }
+
+  function render(){
+    const p = pFromScroll();  
+
+    if (p >= FADE_P_START){
+      const t = clamp01((p - FADE_P_START) / (FADE_P_END - FADE_P_START));
+      stageEl.style.opacity = String(1 - easeInOutCubic(t));
+    } else {
+      stageEl.style.opacity = "1";
+    } 
+
+    if (p >= CLEANUP_P_START){
+      renderWithU(0.80);
+      return;
+    } 
+
+    const u = mapProgressToU(p);
+    renderWithU(u);
+  } 
+
+
+  function normalizeWheelDelta(e){
+    let dy = e.deltaY;
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= window.innerHeight;
+    return dy;
+  }
+
+  inputLayer.addEventListener('wheel', (e) => {
+    e.preventDefault();
+    markInput();
+    if (introActive) return;
+
+    const dy = normalizeWheelDelta(e);
+    const impulse = Math.max(-MAX_IMPULSE, Math.min(MAX_IMPULSE, dy * WHEEL_SCALE));
+    vVel += impulse * RESPONSE;
+  }, { passive: false });
+
+  let touchActive = false;
+  let lastY = 0;
+
+  inputLayer.addEventListener('touchstart', (e) => {
+    if (e.touches && e.touches[0]){
+      touchActive = true;
+      lastY = e.touches[0].clientY;
+    }
+  }, { passive: true });
+
+  inputLayer.addEventListener('touchmove', (e) => {
+    if (!touchActive) return;
+    if (e.touches && e.touches[0]){
+      e.preventDefault();
+      markInput();
+      if (introActive) return;
+
+      const y = e.touches[0].clientY;
+      const dy = lastY - y;
+      lastY = y;
+
+      const impulse = Math.max(-MAX_IMPULSE, Math.min(MAX_IMPULSE, dy * TOUCH_SCALE));
+      vVel += impulse * RESPONSE;
+    }
+  }, { passive: false });
+
+  inputLayer.addEventListener('touchend', () => { touchActive = false; }, { passive: true });
+  inputLayer.addEventListener('touchcancel', () => { touchActive = false; }, { passive: true });
+
+  window.addEventListener('keydown', (e) => {
+    if (introActive) return;
+    if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' '){
+      markInput();
+      vVel += KEY_STEP;
+    } else if (e.key === 'ArrowUp' || e.key === 'PageUp'){
+      markInput();
+      vVel -= KEY_STEP;
+    }
+  });
+
+  let last = performance.now();
+
+  function startIntro(now){
+    introActive = true;
+    introStart = now;
+    vVel = 0;
+    stageEl.style.opacity = "1";
+  } 
+
+  function tick(now){
+    const dt = Math.min(40, now - last);
+    last = now;
+
+    const p = pFromScroll();
+
+    // Wrap plus tard (quand vraiment sorti) pour éviter les pops
+    if (!introActive && lastP > 0.97 && p < 0.06){
+      vScroll = 0;
+      startIntro(now);
+    }
+    lastP = p;
+
+    if (introActive){
+      const t = clamp01((now - introStart) / 850);
+      const e = easeOutCubic(t);
+      const u = lerp(0.00, 0.12, e);
+      renderWithU(u);
+
+      if (t >= 1){
+        introActive = false;
+        vScroll = 0.12 * LOOP;
+        scheduleHint();
+      }
+
+      requestAnimationFrame(tick);
+      return;
+    }
+
+    vScroll += vVel;
+    vVel *= Math.pow(0.86, dt / 16);
+
+    if (vScroll > 1e12) vScroll = vScroll % LOOP;
+    if (vScroll < -1e12) vScroll = -((-vScroll) % LOOP);
+
+    render();
+    requestAnimationFrame(tick);
+  }
+
+  computeLoopLen();
+  window.addEventListener('resize', () => { computeLoopLen(); });
+
+  startIntro(performance.now());
+  requestAnimationFrame(tick);
+
+  // JSZip tool (unchanged)
   let zip = new JSZip();
+  let latestParts = [];
 
-  // Exported blobs for direct download via thumbnail click
-  let latestParts = []; // [{ index: 1..3, blob: Blob, filename: string }]
-
-  // ==============================
-  // Entrance animation
-  // ==============================
-  setTimeout(function() {
-    content.classList.add('enter');
-    content.style.marginTop = '-8%';
-  }, 80);
-
-  // ==============================
-  // Drag & drop
-  // ==============================
   dropZone.addEventListener('dragover', (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -472,170 +949,84 @@ document.addEventListener('DOMContentLoaded', function() {
     e.stopPropagation();
     e.preventDefault();
     dropZone.classList.remove('over');
-
     const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      processFile(files[0]);
-    }
+    if (files.length > 0) processFile(files[0]);
   });
 
-  // File selection via input
   uploadButton.addEventListener('change', function(e) {
-    if (e.target.files.length > 0) {
-      processFile(e.target.files[0]);
-    }
+    if (e.target.files.length > 0) processFile(e.target.files[0]);
   });
 
-  // ==============================
-  // File processing
-  // ==============================
   function processFile(file) {
-    // Reset UI & data for a new file
     previewContainer.innerHTML = '';
     previewContainer.style.display = 'none';
     downloadContainer.innerHTML = '';
     zip = new JSZip();
     latestParts = [];
-
-    // Start slicing
     partitionImage(file);
-
-    // Show ZIP button (it will generate a real <a download> link)
     downloadButton.style.display = 'inline-block';
   }
 
-  // =====================================================
-  // Image helpers
-  // =====================================================
-
-  // Draws an image like CSS background-size: cover
-  // Fills the target area without letterboxing, cropping from the center if needed.
   function drawCover(ctx, img, dx, dy, dw, dh) {
     const sw = img.width;
     const sh = img.height;
-
     const scale = Math.max(dw / sw, dh / sh);
     const cw = dw / scale;
     const ch = dh / scale;
-
     const sx = (sw - cw) / 2;
     const sy = (sh - ch) / 2;
-
     ctx.drawImage(img, sx, sy, cw, ch, dx, dy, dw, dh);
   }
 
-  // Downloads a blob (used when clicking a thumbnail)
   function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
-
     const a = document.createElement('a');
     a.href = url;
     a.download = filename;
-
     document.body.appendChild(a);
     a.click();
     a.remove();
-
-    setTimeout(function() {
-      URL.revokeObjectURL(url);
-    }, 60000);
+    setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
   }
-
-  // =====================================================
-  // Partitioning logic
-  // =====================================================
-
-  /*
-    Posting note:
-    Exported tiles are 1080x1350 (4:5). Instagram profile grids typically crop
-    posts to a narrower portrait preview (around 3:4). This tool generates tiles
-    with safe “bleed” areas so the grid looks continuous across 3 posts.
-
-    Publishing guidance:
-    Ensure each tile is posted as a full 4:5 image. Instagram may preview in a square
-    or apply additional cropping in some contexts; avoiding extra edits/resizing helps
-    prevent visible misalignment in the profile grid. If a warning is displayed in the UI,
-    keep it clear and noticeable while preserving a clean, pleasant layout (avoid harsh,
-    intrusive placement).
-  */
 
   function partitionImage(file) {
     const reader = new FileReader();
-
     reader.onload = function(e) {
       const img = new Image();
-
       img.onload = function() {
-        // =====================================================
-        // 1) Instagram parameters (post export + grid behavior)
-        // =====================================================
-
-        // Post export size (portrait 4:5)
         const TILE_W = 1080;
         const TILE_H = 1350;
 
-        // Profile grid visible area ratio (approx. 3:4 portrait => width/height ~ 0.75)
-        const GRID_RATIO = 3 / 4; // ~0.75
-
-        // Visible grid width for a TILE_H height
-        // 1350 * 0.75 = 1012.5 => round, then adjust to keep an integer bleed.
+        const GRID_RATIO = 3 / 4;
         let visibleW = Math.round(TILE_H * GRID_RATIO);
 
-        // Enforce an integer symmetric bleed:
-        // bleed = (1080 - visibleW)/2 must be an integer.
         let bleed = (TILE_W - visibleW) / 2;
         if (!Number.isInteger(bleed)) {
-          // Try visibleW-1 or visibleW+1 to obtain an integer bleed.
           const try1 = (TILE_W - (visibleW - 1)) / 2;
           const try2 = (TILE_W - (visibleW + 1)) / 2;
-
-          if (Number.isInteger(try1)) {
-            visibleW = visibleW - 1;
-            bleed = try1;
-          } else if (Number.isInteger(try2)) {
-            visibleW = visibleW + 1;
-            bleed = try2;
-          } else {
-            // Fallback: floor the bleed and recompute visible width
-            bleed = Math.floor(bleed);
-            visibleW = TILE_W - 2 * bleed;
-          }
+          if (Number.isInteger(try1)) { visibleW -= 1; bleed = try1; }
+          else if (Number.isInteger(try2)) { visibleW += 1; bleed = try2; }
+          else { bleed = Math.floor(bleed); visibleW = TILE_W - 2 * bleed; }
         }
 
-        // Master "grid-visible" canvas across 3 tiles (continuous content)
         const MASTER_W = visibleW * 3;
         const MASTER_H = TILE_H;
 
-        // =====================================================
-        // 2) Build the master (cover-fit first, no letterboxing)
-        // =====================================================
         const masterCanvas = document.createElement("canvas");
         const mctx = masterCanvas.getContext("2d");
-
         masterCanvas.width = MASTER_W;
         masterCanvas.height = MASTER_H;
 
-        // Resampling quality
         mctx.imageSmoothingEnabled = true;
         mctx.imageSmoothingQuality = "high";
 
-        // Cover-fill MASTER_W x MASTER_H (center crop if needed)
         drawCover(mctx, img, 0, 0, MASTER_W, MASTER_H);
-
-        // =====================================================
-        // 3) Cut into 3 tiles (1080x1350)
-        //    - keep the visible area centered (x = bleed)
-        //    - fill bleed by continuity from the master (no 1px stretching)
-        // =====================================================
 
         previewContainer.innerHTML = "";
         previewContainer.style.display = "flex";
-        const publishWarning = document.getElementById("publishWarning");
-        publishWarning.classList.remove("show");
 
-        setTimeout(() => {
-          publishWarning.classList.add("show");
-        }, 100);
+        publishWarning.classList.remove("show");
+        setTimeout(() => { publishWarning.classList.add("show"); }, 100);
 
         for (let i = 0; i < 3; i++) {
           const canvas = document.createElement("canvas");
@@ -647,64 +1038,36 @@ document.addEventListener('DOMContentLoaded', function() {
           ctx.imageSmoothingEnabled = true;
           ctx.imageSmoothingQuality = "high";
 
-          // Source X of the visible area inside the master
           const srcXVisible = i * visibleW;
 
-          // a) Visible area centered in the tile
-          ctx.drawImage(
-            masterCanvas,
-            srcXVisible, 0, visibleW, TILE_H,
-            bleed, 0, visibleW, TILE_H
-          );
+          ctx.drawImage(masterCanvas, srcXVisible, 0, visibleW, TILE_H, bleed, 0, visibleW, TILE_H);
 
-          // b) Left bleed: copy pixels from the left side of the visible area
           const leftSrcX = Math.max(srcXVisible - bleed, 0);
           const leftSrcW = srcXVisible - leftSrcX;
 
           if (leftSrcW > 0) {
-            ctx.drawImage(
-              masterCanvas,
-              leftSrcX, 0, leftSrcW, TILE_H,
-              bleed - leftSrcW, 0, leftSrcW, TILE_H
-            );
+            ctx.drawImage(masterCanvas, leftSrcX, 0, leftSrcW, TILE_H, bleed - leftSrcW, 0, leftSrcW, TILE_H);
           }
 
-          // If still missing (first tile edge), complete using adjacent pixels (no smearing)
           const missingLeft = bleed - leftSrcW;
           if (missingLeft > 0) {
-            ctx.drawImage(
-              masterCanvas,
-              srcXVisible, 0, missingLeft, TILE_H,
-              0, 0, missingLeft, TILE_H
-            );
+            ctx.drawImage(masterCanvas, srcXVisible, 0, missingLeft, TILE_H, 0, 0, missingLeft, TILE_H);
           }
 
-          // c) Right bleed: same logic on the right side
           const rightEdge = srcXVisible + visibleW;
           const rightSrcX = Math.min(rightEdge, MASTER_W);
           const rightAvailable = Math.max(0, MASTER_W - rightSrcX);
           const rightSrcW = Math.min(bleed, rightAvailable);
 
           if (rightSrcW > 0) {
-            ctx.drawImage(
-              masterCanvas,
-              rightSrcX, 0, rightSrcW, TILE_H,
-              bleed + visibleW, 0, rightSrcW, TILE_H
-            );
+            ctx.drawImage(masterCanvas, rightSrcX, 0, rightSrcW, TILE_H, bleed + visibleW, 0, rightSrcW, TILE_H);
           }
 
           const missingRight = bleed - rightSrcW;
           if (missingRight > 0) {
-            ctx.drawImage(
-              masterCanvas,
-              rightEdge - missingRight, 0, missingRight, TILE_H,
-              bleed + visibleW + rightSrcW, 0, missingRight, TILE_H
-            );
+            ctx.drawImage(masterCanvas, rightEdge - missingRight, 0, missingRight, TILE_H, bleed + visibleW + rightSrcW, 0, missingRight, TILE_H);
           }
 
-          // =====================================================
-          // 4) Preview + export PNG + ZIP
-          // =====================================================
           const dataURL = canvas.toDataURL("image/png");
           const previewImg = new Image();
           previewImg.src = dataURL;
@@ -727,71 +1090,47 @@ document.addEventListener('DOMContentLoaded', function() {
           previewContainer.appendChild(wrap);
         }
       };
-
       img.src = e.target.result;
     };
-
     reader.readAsDataURL(file);
   }
 
-  // =====================================================
-  // ZIP download (generates a real <a download> link)
-  // =====================================================
   function downloadZip() {
     downloadButton.disabled = true;
     downloadButton.textContent = "Preparing ZIP...";
 
-    zip.generateAsync({
-      type: "blob",
-      compression: "STORE"
-    }).then(function(blob) {
+    zip.generateAsync({ type: "blob", compression: "STORE" })
+      .then(function(blob) {
+        const url = URL.createObjectURL(blob);
 
-      const url = URL.createObjectURL(blob);
+        const existingLink = document.getElementById("zipDownloadLink");
+        if (existingLink) existingLink.remove();
 
-      const existingLink = document.getElementById("zipDownloadLink");
-      if (existingLink) {
-        existingLink.remove();
-      }
+        const a = document.createElement("a");
+        a.id = "zipDownloadLink";
+        a.href = url;
+        a.download = "partitions.zip";
+        a.textContent = "Download partitions.zip";
+        a.className = "download-link";
 
-      const a = document.createElement("a");
-      a.id = "zipDownloadLink";
-      a.href = url;
-      a.download = "partitions.zip";
-      a.textContent = "Download partitions.zip";
-      a.className = "download-link";
+        downloadContainer.innerHTML = "";
+        downloadContainer.appendChild(a);
 
-      downloadContainer.innerHTML = "";
-      downloadContainer.appendChild(a);
+        downloadButton.disabled = false;
+        downloadButton.textContent = "Generate ZIP";
 
-      downloadButton.disabled = false;
-      downloadButton.textContent = "Generate ZIP";
-
-      setTimeout(function() {
-        URL.revokeObjectURL(url);
-      }, 60000);
-
-    }).catch(function(error) {
-
-      console.error("ZIP generation error:", error);
-
-      downloadButton.disabled = false;
-      downloadButton.textContent = "Generate ZIP";
-
-      alert("Error while generating the ZIP.");
-    });
+        setTimeout(function() { URL.revokeObjectURL(url); }, 60000);
+      })
+      .catch(function(error) {
+        console.error("ZIP generation error:", error);
+        downloadButton.disabled = false;
+        downloadButton.textContent = "Generate ZIP";
+        alert("Error while generating the ZIP.");
+      });
   }
 
   downloadButton.addEventListener('click', downloadZip);
-
-  // Cosmetic scroll animation
-  window.addEventListener('scroll', function() {
-    const scrollPercentage = window.scrollY / window.innerHeight;
-    let newMarginTop = -8 - (scrollPercentage * 12);
-    newMarginTop = Math.max(-20, Math.min(-3, newMarginTop));
-    content.style.marginTop = newMarginTop + '%';
-  });
-
 });
-  </script>
+</script>
 </body>
 </html>
