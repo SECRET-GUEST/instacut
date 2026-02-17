@@ -11,7 +11,7 @@
 
 # INSTACUT 🧩
 
-### Instagram 3-Post Grid Splitter (4:5 Safe)
+### Instagram 3-Post Grid Splitter
 
 INSTACUT is an infinite caroussel lightweight browser tool that splits a single image into **three aligned Instagram posts (1080×1350, 4:5)** while preserving grid continuity.
 
