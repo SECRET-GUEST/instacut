@@ -9,13 +9,12 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@100;200&display=swap" rel="stylesheet">
-  
-  <title>INSTACUT</title>
 
+  <title>INSTACUT</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.6.0/jszip.min.js"></script>
 
-  <style>
-:root{
+<style>
+  :root{
   --bg0:#07070b;
   --bg1:#0a0d16;
 
@@ -31,10 +30,22 @@
   --d:#a88bff;
 
   --gap: 18px;
+
+  /* footer sizing */
+  --ff-pad-y: 12px;
+  --ff-pad-x: 16px;
+
+  /* typography clamps */
+  --t-h2: clamp(1.05rem, 1.2vw + 0.85rem, 1.4rem);
+  --t-p:  clamp(0.82rem, 0.45vw + 0.78rem, 0.95rem);
+  --t-tag: clamp(0.72rem, 0.35vw + 0.70rem, 0.85rem);
+  --t-step: clamp(0.78rem, 0.35vw + 0.76rem, 0.9rem);
+  --t-keys: clamp(0.70rem, 0.30vw + 0.68rem, 0.8rem);
+  --t-footer: clamp(0.72rem, 0.35vw + 0.70rem, 0.85rem);
 }
 
 *{ box-sizing:border-box; }
-html, body{ height:100%; }
+html, body{ height:100%; overflow-x:hidden; }
 
 body{
   margin:0;
@@ -45,7 +56,7 @@ body{
     radial-gradient(900px 600px at 80% 20%, rgba(167,203,217,0.18), transparent 60%),
     radial-gradient(1000px 700px at 50% 90%, rgba(179,255,179,0.12), transparent 60%),
     linear-gradient(180deg, var(--bg0), var(--bg1));
-  overflow: hidden;
+  overflow:hidden; /* important: avoid global scrollbars */
 }
 
 body::before{
@@ -55,7 +66,7 @@ body::before{
   pointer-events: none;
   background-image:
     linear-gradient(90deg, rgba(255,255,255,0.015), rgba(255,255,255,0.015)),
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, rgba(0,0,0,0) 1px, rgba(0,0,0,0) 3px);
+    repeating-linear-gradient(0deg, rgba(255,255,255,0.02), rgba(255,255,255,0.02) 1px, transparent 1px, transparent 3px);
   mix-blend-mode: overlay;
   opacity: 0.45;
 }
@@ -64,14 +75,17 @@ body::before{
   position: fixed;
   inset: 0;
   z-index: 9999;
-  background: transparent;
-  pointer-events: none;
+  pointer-events:none;
 }
 
+/* stage container */
 .stage{
   position: fixed;
   inset: 0;
   pointer-events: none;
+  opacity: 1;
+  transition: opacity 0ms linear;
+  will-change: opacity;
 }
 
 /* Title */
@@ -105,6 +119,17 @@ body::before{
   will-change: transform, opacity;
   z-index: 3;
   pointer-events: auto;
+
+  /* IMPORTANT: no auto scrollbars here */
+  overflow: hidden;
+}
+
+/* keep it always inside viewport */
+@supports (height: 100svh){
+  .content{ max-height: calc(100svh - 24px); }
+}
+@supports not (height: 100svh){
+  .content{ max-height: calc(100vh - 24px); }
 }
 
 .sigil{
@@ -131,7 +156,6 @@ body::before{
   z-index: 6;
   pointer-events: none;
 }
-
 .scroll-hint::before{
   content: "⌄";
   position: absolute;
@@ -139,12 +163,11 @@ body::before{
   top: 50%;
   transform: translate(-50%, -55%);
   font-family: 'Inter', sans-serif;
-  font-weight: 100;  
-  font-size: 28px;   
-  letter-spacing: 0.05em;   
+  font-weight: 100;
+  font-size: 28px;
+  letter-spacing: 0.05em;
   color: rgba(255,255,255,0.65);
 }
-
 @keyframes hintPulse{
   0%   { transform: translate(-50%, -50%) scale(0.95); opacity: 0; }
   16%  { opacity: 0.55; }
@@ -153,184 +176,6 @@ body::before{
   100% { transform: translate(-50%, -50%) scale(0.94); opacity: 0; }
 }
 .scroll-hint.play{ animation: hintPulse 900ms cubic-bezier(.2,.9,.2,1) 1; }
-
-/* Features panel */
-.features{
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 100%;
-  height: 100%;
-  background: linear-gradient(180deg, var(--bg1), var(--bg0));
-  border-top: 1px solid var(--stroke);
-  transform: translateY(140%);
-  will-change: transform;
-  z-index: 2;
-  pointer-events: none;
-}
-
-.features-glow{
-  position:absolute;
-  inset:-1px;
-  pointer-events:none;
-  background:
-    radial-gradient(800px 200px at 50% 0%, rgba(167,203,217,0.15), transparent 70%),
-    radial-gradient(600px 180px at 20% 100%, rgba(168,139,255,0.12), transparent 70%),
-    radial-gradient(500px 160px at 80% 90%, rgba(179,255,179,0.08), transparent 70%);
-  opacity: 0.65;
-  transform: translateY(14px);
-  will-change: transform, opacity;
-}
-
-.features-inner{
-  position: relative;
-  height: 100%;
-  width: 100%;
-}
-
-.features-content{
-  position: relative;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding: 3.0rem 2rem 2.0rem;
-  height: calc(100% - 84px);
-  display:flex;
-  flex-direction: column;
-  justify-content: center;
-  z-index: 1;
-}
-
-.f-main, .f-grid, .f-keys{
-  opacity: 0;
-  transform: translateY(26px);
-  will-change: transform, opacity;
-}
-
-.f-main h2{
-  font-size: 1.4rem;
-  font-weight: 700;
-  margin: 0 0 1rem;
-  background: linear-gradient(120deg, var(--a), var(--b), var(--c), var(--d));
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
-  background-clip: text;
-  letter-spacing: 0.02em;
-}
-
-.f-main p{
-  color: var(--muted);
-  line-height: 1.7;
-  margin: 0 0 2.2rem;
-  font-size: 0.95rem;
-}
-
-.f-grid{
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 2.5rem;
-  margin-bottom: 2.2rem;
-}
-
-.f-col h3{
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--ink);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin: 0 0 1rem;
-  opacity: 0.9;
-}
-
-.feature-tag{
-  display:inline-block;
-  padding: 6px 12px;
-  margin: 4px 6px 4px 0;
-  border-radius: 8px;
-  border: 1px solid rgba(255,255,255,0.12);
-  background: rgba(255,255,255,0.04);
-  color: var(--muted);
-  font-size: 0.85rem;
-  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
-}
-.feature-tag:hover{
-  border-color: rgba(167,203,217,0.35);
-  background: rgba(167,203,217,0.08);
-  transform: translateY(-1px);
-}
-
-.step{
-  padding: 8px 0;
-  color: var(--muted);
-  font-size: 0.9rem;
-  border-bottom: 1px solid rgba(255,255,255,0.06);
-}
-.step:last-child{ border-bottom: none; }
-
-.f-keys{
-  padding: 1.2rem 1.5rem;
-  margin: 1.8rem 0 0;
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.10);
-  background: rgba(255,255,255,0.03);
-  backdrop-filter: blur(10px);
-  color: rgba(255,255,255,0.50);
-  font-size: 0.8rem;
-  line-height: 1.8;
-  text-align: center;
-}
-
-.fake-footer{
-  position: absolute;
-  left: 0;
-  bottom: 0;
-  width: 100%;
-  height: 84px;
-  border-top: 1px solid rgba(255,255,255,0.10);
-  background: rgba(0,0,0,0.10);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  padding: 0 16px;
-
-  opacity: 0;
-  transform: translateY(12px);
-  will-change: transform, opacity;
-  pointer-events: auto;
-}
-
-.fake-footer-inner{
-  width: min(980px, 92vw);
-  display:flex;
-  align-items:center;
-  justify-content: space-between;
-  gap: 14px;
-  flex-wrap: wrap;
-}
-
-.ff-left{
-  font-size: 0.85rem;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.55);
-}
-
-.ff-links{
-  display:flex;
-  gap: 14px;
-  flex-wrap: wrap;
-  justify-content:flex-end;
-}
-
-.fake-footer a{
-  color: rgba(255,255,255,0.85);
-  text-decoration: none;
-  border-bottom: 1px solid rgba(255,255,255,0.25);
-  padding-bottom: 2px;
-}
-.fake-footer a:hover{
-  border-bottom-color: rgba(179,255,179,0.55);
-}
 
 /* Tool UI */
 .drop-zone{
@@ -345,15 +190,33 @@ body::before{
   overflow: hidden;
 }
 .drop-zone input[type="file"]{ position:absolute; inset:0; opacity:0; cursor:pointer; }
+
 .drop-hint{ display:grid; gap:10px; justify-items:center; padding:10px 0; }
-.drop-hint .kicker{ font-size:0.95rem; color:var(--muted); letter-spacing:0.02em; }
+.drop-hint .kicker{
+  font-size: clamp(0.80rem, 0.35vw + 0.78rem, 0.95rem);
+  color: var(--muted);
+  letter-spacing:0.02em;
+  text-align:center;
+}
 .drop-hint .cta{
-  display:inline-flex; align-items:center; gap:10px;
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
   padding: 12px 18px;
   border-radius:14px;
   border:1px solid rgba(255,255,255,0.14);
   background: linear-gradient(135deg, rgba(167,203,217,0.18), rgba(168,139,255,0.12));
+  text-align:center;
+  flex-wrap: wrap;
+  justify-content: center;
+  max-width: 100%;
 }
+.drop-hint .cta span{
+  overflow-wrap:anywhere;
+  word-break:break-word;
+  min-width: 0;
+}
+
 .drop-zone.over::before{
   content:'';
   position:absolute; inset:0;
@@ -452,7 +315,7 @@ body::before{
   pointer-events: none;
 }
 .preview-tile:hover::after{ opacity: 1; transform: translateY(0); }
-#previewContainer img{ height: 200px; display: block; }
+#previewContainer img{ height: 200px; display:block; }
 
 .publish-warning{
   margin: 14px auto 4px;
@@ -489,25 +352,317 @@ body::before{
   background: linear-gradient(135deg, rgba(179,255,179,0.14), rgba(167,203,217,0.22));
 }
 
-.stage{
-  position: fixed;
-  inset: 0;
+/* Features panel */
+.features{
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(180deg, var(--bg1), var(--bg0));
+  border-top: 1px solid var(--stroke);
+  transform: translateY(140%);
+  will-change: transform;
+  z-index: 2;
   pointer-events: none;
-  opacity: 1;
-  transition: opacity 0ms linear;
-  will-change: opacity;
 }
 
+.features-glow{
+  position:absolute;
+  inset:-1px;
+  pointer-events:none;
+  background:
+    radial-gradient(800px 200px at 50% 0%, rgba(167,203,217,0.15), transparent 70%),
+    radial-gradient(600px 180px at 20% 100%, rgba(168,139,255,0.12), transparent 70%),
+    radial-gradient(500px 160px at 80% 90%, rgba(179,255,179,0.08), transparent 70%);
+  opacity: 0.65;
+  transform: translateY(14px);
+  will-change: transform, opacity;
+}
 
+.features-inner{
+  position: relative;
+  height: 100%;
+  width: 100%;
+
+  /* important: allow internal scroll strategy without affecting body */
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+}
+
+/*
+  IMPORTANT:
+  - By default: no scrollbars / no overflow issues -> overflow hidden
+  - On short screens: we enable scrolling (touch) but HIDE the scrollbar
+*/
+.features-content{
+  position: relative;
+  max-width: 1000px;
+  margin: 0 auto;
+
+  padding: 3.0rem 2rem 2.0rem;
+  height: 100%;
+
+  display:flex;
+  flex-direction: column;
+  justify-content: center;
+
+  z-index: 1;
+
+  /* default: avoid scrollbars */
+  overflow: hidden;
+
+  /* prevent bottom overlap with sticky footer */
+  padding-bottom: calc(2.0rem + 64px);
+}
+
+.f-main, .f-grid, .f-keys{
+  opacity: 0;
+  transform: translateY(26px);
+  will-change: transform, opacity;
+}
+
+.f-main h2{
+  font-size: var(--t-h2);
+  font-weight: 700;
+  margin: 0 0 1rem;
+  background: linear-gradient(120deg, var(--a), var(--b), var(--c), var(--d));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 0.02em;
+}
+.f-main p{
+  color: var(--muted);
+  line-height: 1.6;
+  margin: 0 0 2.0rem;
+  font-size: var(--t-p);
+}
+
+.f-grid{
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2.2rem;
+  margin-bottom: 2.0rem;
+}
+.f-col h3{
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--ink);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin: 0 0 1rem;
+  opacity: 0.9;
+}
+
+.feature-tag{
+  display:inline-block;
+  padding: 6px 12px;
+  margin: 4px 6px 4px 0;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  font-size: var(--t-tag);
+  transition: transform 180ms ease, background 180ms ease, border-color 180ms ease;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.feature-tag:hover{
+  border-color: rgba(167,203,217,0.35);
+  background: rgba(167,203,217,0.08);
+  transform: translateY(-1px);
+}
+
+.step{
+  padding: 8px 0;
+  color: var(--muted);
+  font-size: var(--t-step);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.step:last-child{ border-bottom: none; }
+
+.f-keys{
+  padding: 1.0rem 1.2rem;
+  margin: 1.4rem 0 0;
+  border-radius: 14px;
+  border: 1px solid rgba(255,255,255,0.10);
+  background: rgba(255,255,255,0.03);
+  backdrop-filter: blur(10px);
+  color: rgba(255,255,255,0.50);
+  font-size: var(--t-keys);
+  line-height: 1.6;
+  text-align: center;
+  overflow-wrap:anywhere;
+  word-break: break-word;
+}
+
+/* Fake footer: sticky + flexible + keeps animation props */
+.fake-footer{
+  position: sticky;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+
+  border-top: 1px solid rgba(255,255,255,0.10);
+  background: rgba(0,0,0,0.12);
+  backdrop-filter: blur(10px);
+
+  padding: var(--ff-pad-y) var(--ff-pad-x);
+  padding-bottom: calc(var(--ff-pad-y) + env(safe-area-inset-bottom, 0px));
+
+  opacity: 0;
+  transform: translateY(12px);
+  will-change: transform, opacity;
+  pointer-events: auto;
+
+  /* ensure it renders above content when scrolling */
+  z-index: 5;
+}
+
+.fake-footer-inner{
+  width: min(980px, 92vw);
+  margin: 0 auto;
+  display:flex;
+  align-items:center;
+  justify-content: space-between;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  min-width: 0;
+}
+
+.ff-left{
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.55);
+}
+
+.ff-links{
+  display:flex;
+  gap: 10px 14px;
+  flex-wrap: wrap;
+  justify-content:flex-end;
+  min-width: 0;
+}
+
+.fake-footer a{
+  color: rgba(255,255,255,0.85);
+  text-decoration: none;
+  border-bottom: 1px solid rgba(255,255,255,0.25);
+  padding-bottom: 2px;
+
+  font-size: var(--t-footer);
+  line-height: 1.2;
+
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.fake-footer a:hover{
+  border-bottom-color: rgba(179,255,179,0.55);
+}
+
+/* Responsive widths */
 @media (max-width: 768px){
-  .features-content{ padding: 2.2rem 1.5rem 1.5rem; height: calc(100% - 92px); }
-  .f-main h2{ font-size: 1.2rem; }
-  .f-grid{ grid-template-columns: 1fr; gap: 2rem; }
-  .fake-footer{ height: 92px; }
+  .features-content{
+    padding: 2.2rem 1.5rem 1.5rem;
+    padding-bottom: calc(1.5rem + 72px);
+  }
+  .f-grid{ grid-template-columns: 1fr; gap: 1.6rem; }
   .fake-footer-inner{ justify-content: center; }
   .ff-links{ justify-content: center; }
 }
-  </style>
+
+/* very small widths: stack footer + tighter padding */
+@media (max-width: 420px){
+  :root{ --ff-pad-x: 12px; --ff-pad-y: 10px; }
+  .fake-footer-inner{ justify-content: center; }
+  .ff-left{ width: 100%; text-align: center; }
+  .ff-links{ width: 100%; justify-content: center; }
+}
+
+@media (max-width: 360px){
+  .content{ padding: 20px 14px 22px; }
+  #previewContainer img{ height: 160px; }
+  .features-content{
+    padding: 1.7rem 1.1rem 1.1rem;
+    padding-bottom: calc(1.1rem + 84px);
+  }
+}
+
+@media (max-width: 330px){
+  .content{ padding: 18px 12px 20px; }
+  #previewContainer img{ height: 145px; }
+  .features-content{
+    padding: 1.4rem 0.95rem 0.95rem;
+    padding-bottom: calc(0.95rem + 92px);
+  }
+  .ff-links{ gap: 8px 10px; }
+}
+
+@media (max-width: 280px){
+  .content{ padding: 16px 10px 18px; }
+  #previewContainer img{ height: 132px; }
+  .features-content{
+    padding: 1.2rem 0.8rem 0.8rem;
+    padding-bottom: calc(0.8rem + 104px);
+  }
+}
+
+/*
+  Height strategy:
+  - under ~860px: enable internal scroll for features content
+  - scrollbar hidden (still scrollable)
+*/
+@media (max-height: 860px){
+  .features-content{
+    justify-content: flex-start;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;      /* Firefox */
+    -ms-overflow-style: none;   /* IE/Edge legacy */
+  }
+  .features-content::-webkit-scrollbar{ width:0; height:0; } /* WebKit */
+}
+
+/* even shorter: compress padding & preview */
+@media (max-height: 740px){
+  .content{ padding: 18px 14px 20px; }
+  #previewContainer img{ height: 145px; }
+  .features-content{
+    padding-top: 1.2rem;
+    padding-bottom: calc(0.9rem + 104px);
+  }
+  .f-main p{ margin-bottom: 1.3rem; }
+  .f-grid{ margin-bottom: 1.2rem; gap: 1.2rem; }
+}
+
+/* ultra short */
+@media (max-height: 620px){
+  .content{ padding: 16px 12px 18px; }
+  #previewContainer img{ height: 132px; }
+  .features-content{
+    padding-top: 1.0rem;
+    padding-bottom: calc(0.8rem + 112px);
+  }
+  .f-keys{ padding: 0.85rem 1.0rem; }
+}
+/* Hide keyword block on very small devices (prevents cut/scroll) */
+@media (max-width: 420px) and (max-height: 880px){
+  #fKeys{
+    display: none !important;
+  }
+
+  .features-content{
+    padding-bottom: calc(0.8rem + 96px) !important;
+  }
+}
+
+</style>
 </head>
 
 <body>
@@ -602,20 +757,6 @@ body::before{
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-  // ============================================================
-  // IMPORTANT FIX
-  // ------------------------------------------------------------
-  // Your #inputLayer is a full-screen overlay (z-index:9999).
-  // If it captures pointer events, it will block ALL clicks/drags.
-  //
-  // Fix strategy:
-  // 1) Make #inputLayer "click-through" in CSS: pointer-events:none
-  // 2) Attach scroll/touch listeners to window instead of #inputLayer
-  //
-  // Add this in CSS:
-  //   #inputLayer { pointer-events: none; }
-  // ============================================================
-
   const inputLayer = document.getElementById('inputLayer');
 
   const titleTop = document.getElementById('titleTop');
@@ -637,61 +778,42 @@ document.addEventListener('DOMContentLoaded', function() {
   const downloadContainer = document.getElementById('downloadContainer');
   const publishWarning = document.getElementById('publishWarning');
 
-  // -----------------------------
-  // Small math helpers
-  // -----------------------------
   function clamp01(x){ return Math.max(0, Math.min(1, x)); }
   function lerp(a,b,t){ return a + (b-a)*t; }
   function easeOutCubic(t){ return 1 - Math.pow(1 - t, 3); }
   function easeInOutCubic(t){ return t < 0.5 ? 4*t*t*t : 1 - Math.pow(-2*t + 2, 3)/2; }
 
-  // -----------------------------
-  // Scroll loop length
-  // -----------------------------
   let LOOP = 2600;
   function computeLoopLen(){
     const vh = window.innerHeight;
     LOOP = Math.max(2600, Math.round(vh * 3.2));
   }
 
-  // -----------------------------
-  // Input tuning
-  // -----------------------------
   const WHEEL_SCALE = 0.16;
   const TOUCH_SCALE = 0.20;
   const KEY_STEP    = 85;
 
   const MAX_IMPULSE = 85;
-  const FRICTION    = 0.86; // not used directly (kept for reference)
   const RESPONSE    = 0.82;
 
-  // Virtual scroll position + velocity
   let vScroll = 0;
   let vVel = 0;
 
-  // Hold/warp mapping (progress -> u)
   const HOLD_P_START = 0.70;
   const HOLD_P_END   = 0.78;
   const HOLD_U       = 0.74;
 
   const CLEANUP_P_START = 0.95;
 
-  // Fade stage near end
   const FADE_P_START = 0.91;
   const FADE_P_END   = 0.95;
   const stageEl = document.querySelector('.stage');
 
-  // -----------------------------
-  // Convert scroll position to [0..1] progress
-  // -----------------------------
   function pFromScroll(){
     const mod = ((vScroll % LOOP) + LOOP) % LOOP;
     return mod / LOOP;
   }
 
-  // -----------------------------
-  // Non-linear mapping so some segments "hold" longer
-  // -----------------------------
   function mapProgressToU(p){
     if (p <= HOLD_P_START) return p;
     if (p >= HOLD_P_END){
@@ -703,18 +825,12 @@ document.addEventListener('DOMContentLoaded', function() {
     return HOLD_U;
   }
 
-  // -----------------------------
-  // Intro animation state
-  // -----------------------------
   let introActive = true;
   let introStart = performance.now();
   const INTRO_MS = 850;
 
   let lastP = 0;
 
-  // -----------------------------
-  // Hint / idle reminder logic
-  // -----------------------------
   let lastInputTime = performance.now();
   let hintTimer = null;
   let hintInterval = null;
@@ -729,7 +845,7 @@ document.addEventListener('DOMContentLoaded', function() {
     if (p > 0.30) return;
     scrollHint.style.opacity = '1';
     scrollHint.classList.remove('play');
-    void scrollHint.offsetWidth; // restart animation
+    void scrollHint.offsetWidth;
     scrollHint.classList.add('play');
     setTimeout(() => { hideHint(); }, 950);
   }
@@ -753,14 +869,10 @@ document.addEventListener('DOMContentLoaded', function() {
     scheduleHint();
   }
 
-  // ============================================================
-  // RENDERING
-  // ============================================================
   function renderWithU(u){
     const vh = window.innerHeight;
     const gapPx = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap')) || 18;
 
-    // Features panel enters then exits
     const panelIn = easeInOutCubic(clamp01((u - 0.26) / 0.28));
     let panelYpct = lerp(140, 0, panelIn);
 
@@ -770,7 +882,6 @@ document.addEventListener('DOMContentLoaded', function() {
     features.style.transform = `translateY(${panelYpct}%)`;
     featuresGlow.style.transform = `translateY(${lerp(14, -10, panelIn) + lerp(0, -10, panelOut)}px)`;
 
-    // Title anim
     const titleEnter = easeOutCubic(clamp01((u - 0.02) / 0.26));
     const titleExit  = easeInOutCubic(clamp01((u - 0.22) / 0.62));
 
@@ -781,7 +892,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const titleHide = easeInOutCubic(clamp01((u - 0.10) / 0.30));
     let titleO = lerp(0.0, 1.0, titleEnter) * lerp(1.0, 0.55, titleHide);
 
-    // Main box anim
     const boxEnter = easeOutCubic(clamp01(u / 0.20));
     const growPhase = easeInOutCubic(clamp01((u - 0.12) / 0.46));
     const escapePhase = easeInOutCubic(clamp01((u - 0.66) / 0.18));
@@ -803,7 +913,19 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let scale = lerp(0.96, 1.20, growPhase) * lerp(1.0, 0.88, escapePhase);
 
-    // Prevent overlapping features top edge
+    const safePad = 24;
+    const usableH = Math.max(240, vh - safePad);
+    const maxScaleByHeight = vh < 820 ? 1.06 : (vh < 932 ? 1.12 : 1.20);
+    scale = Math.min(scale, maxScaleByHeight);
+
+    const rect2 = content.getBoundingClientRect();
+    const baseH = rect2.height;
+    const scaledH = baseH * scale;
+    if (scaledH > usableH){
+      const fit = usableH / Math.max(1, baseH);
+      scale = Math.min(scale, fit);
+    }
+
     const panelTopPx = (panelYpct / 100) * vh;
     const rect = content.getBoundingClientRect();
     const h = rect.height * scale;
@@ -814,7 +936,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let boxO = lerp(1.0, 0.0, easeInOutCubic(clamp01((u - 0.74) / 0.10)));
 
-    // Hard switch once deep in features
     const inFeaturesHard = (u >= 0.78);
     if (inFeaturesHard){
       titleY = vh * 1.30;
@@ -829,7 +950,6 @@ document.addEventListener('DOMContentLoaded', function() {
     content.style.opacity = String(boxO);
     content.style.transform = `translate(-50%, -50%) translate3d(${jx}px, ${centerY - baseTop}px, 0) scale(${scale})`;
 
-    // Features content stagger
     const a = easeOutCubic(clamp01((u - 0.46) / 0.10));
     const b = easeOutCubic(clamp01((u - 0.52) / 0.12));
     const c = easeOutCubic(clamp01((u - 0.60) / 0.12));
@@ -854,7 +974,6 @@ document.addEventListener('DOMContentLoaded', function() {
   function render(){
     const p = pFromScroll();
 
-    // Fade out the whole stage near the end of the loop
     if (p >= FADE_P_START){
       const t = clamp01((p - FADE_P_START) / (FADE_P_END - FADE_P_START));
       stageEl.style.opacity = String(1 - easeInOutCubic(t));
@@ -862,7 +981,6 @@ document.addEventListener('DOMContentLoaded', function() {
       stageEl.style.opacity = "1";
     }
 
-    // Cleanup phase: lock at a stable u to avoid weird pops
     if (p >= CLEANUP_P_START){
       renderWithU(0.80);
       return;
@@ -872,22 +990,15 @@ document.addEventListener('DOMContentLoaded', function() {
     renderWithU(u);
   }
 
-  // ============================================================
-  // INPUT (FIXED)
-  // ------------------------------------------------------------
-  // We DO NOT listen on #inputLayer anymore because it is
-  // click-through (pointer-events:none) and should not capture input.
-  // So we listen on window instead.
-  // ============================================================
   function normalizeWheelDelta(e){
     let dy = e.deltaY;
-    if (e.deltaMode === 1) dy *= 16;               // lines -> px
-    else if (e.deltaMode === 2) dy *= window.innerHeight; // pages -> px
+    if (e.deltaMode === 1) dy *= 16;
+    else if (e.deltaMode === 2) dy *= window.innerHeight;
     return dy;
   }
 
   window.addEventListener('wheel', (e) => {
-    e.preventDefault(); // required to avoid browser scrolling
+    e.preventDefault();
     markInput();
     if (introActive) return;
 
@@ -909,7 +1020,7 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('touchmove', (e) => {
     if (!touchActive) return;
     if (e.touches && e.touches[0]){
-      e.preventDefault(); // required to prevent page scroll
+      e.preventDefault();
       markInput();
       if (introActive) return;
 
@@ -925,7 +1036,6 @@ document.addEventListener('DOMContentLoaded', function() {
   window.addEventListener('touchend', () => { touchActive = false; }, { passive: true });
   window.addEventListener('touchcancel', () => { touchActive = false; }, { passive: true });
 
-  // Keyboard input
   window.addEventListener('keydown', (e) => {
     if (introActive) return;
     if (e.key === 'ArrowDown' || e.key === 'PageDown' || e.key === ' '){
@@ -937,9 +1047,6 @@ document.addEventListener('DOMContentLoaded', function() {
     }
   });
 
-  // ============================================================
-  // MAIN TICK LOOP
-  // ============================================================
   let last = performance.now();
 
   function startIntro(now){
@@ -955,14 +1062,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     const p = pFromScroll();
 
-    // Wrap later (once really out) to avoid popping
     if (!introActive && lastP > 0.97 && p < 0.06){
       vScroll = 0;
       startIntro(now);
     }
     lastP = p;
 
-    // Intro sequence: "auto-play" into first state
     if (introActive){
       const t = clamp01((now - introStart) / INTRO_MS);
       const e = easeOutCubic(t);
@@ -979,13 +1084,9 @@ document.addEventListener('DOMContentLoaded', function() {
       return;
     }
 
-    // Integrate velocity -> scroll
     vScroll += vVel;
-
-    // Apply friction (frame-rate independent-ish)
     vVel *= Math.pow(0.86, dt / 16);
 
-    // Keep numbers bounded
     if (vScroll > 1e12) vScroll = vScroll % LOOP;
     if (vScroll < -1e12) vScroll = -((-vScroll) % LOOP);
 
@@ -999,13 +1100,9 @@ document.addEventListener('DOMContentLoaded', function() {
   startIntro(performance.now());
   requestAnimationFrame(tick);
 
-  // ============================================================
-  // TOOL LOGIC (JSZip + Image splitting)
-  // ============================================================
   let zip = new JSZip();
   let latestParts = [];
 
-  // Drag & drop events
   dropZone.addEventListener('dragover', (e) => {
     e.stopPropagation();
     e.preventDefault();
@@ -1025,7 +1122,6 @@ document.addEventListener('DOMContentLoaded', function() {
     if (files.length > 0) processFile(files[0]);
   });
 
-  // File input change
   uploadButton.addEventListener('change', function(e) {
     if (e.target.files.length > 0) processFile(e.target.files[0]);
   });
@@ -1040,7 +1136,6 @@ document.addEventListener('DOMContentLoaded', function() {
     downloadButton.style.display = 'inline-block';
   }
 
-  // Draw image in "cover" mode: always fills the target area
   function drawCover(ctx, img, dx, dy, dw, dh) {
     const sw = img.width;
     const sh = img.height;
@@ -1052,7 +1147,6 @@ document.addEventListener('DOMContentLoaded', function() {
     ctx.drawImage(img, sx, sy, cw, ch, dx, dy, dw, dh);
   }
 
-  // Trigger a download of a blob
   function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
@@ -1069,19 +1163,14 @@ document.addEventListener('DOMContentLoaded', function() {
     reader.onload = function(e) {
       const img = new Image();
       img.onload = function() {
-        // Instagram tile size
         const TILE_W = 1080;
         const TILE_H = 1350;
 
-        // Visible part in the profile grid when IG crops to square:
-        // grid ratio = 3:4 in height terms for 4:5 posts
         const GRID_RATIO = 3 / 4;
         let visibleW = Math.round(TILE_H * GRID_RATIO);
 
-        // Bleed on each side
         let bleed = (TILE_W - visibleW) / 2;
 
-        // Ensure integer bleed to avoid subpixel seams
         if (!Number.isInteger(bleed)) {
           const try1 = (TILE_W - (visibleW - 1)) / 2;
           const try2 = (TILE_W - (visibleW + 1)) / 2;
@@ -1090,7 +1179,6 @@ document.addEventListener('DOMContentLoaded', function() {
           else { bleed = Math.floor(bleed); visibleW = TILE_W - 2 * bleed; }
         }
 
-        // Master canvas is exactly the visible 3 tiles side-by-side
         const MASTER_W = visibleW * 3;
         const MASTER_H = TILE_H;
 
@@ -1102,18 +1190,14 @@ document.addEventListener('DOMContentLoaded', function() {
         mctx.imageSmoothingEnabled = true;
         mctx.imageSmoothingQuality = "high";
 
-        // Fit original image into master canvas (cover)
         drawCover(mctx, img, 0, 0, MASTER_W, MASTER_H);
 
-        // Show preview container
         previewContainer.innerHTML = "";
         previewContainer.style.display = "flex";
 
-        // Show posting hint
         publishWarning.classList.remove("show");
         setTimeout(() => { publishWarning.classList.add("show"); }, 100);
 
-        // Create 3 tiles
         for (let i = 0; i < 3; i++) {
           const canvas = document.createElement("canvas");
           const ctx = canvas.getContext("2d");
@@ -1126,10 +1210,8 @@ document.addEventListener('DOMContentLoaded', function() {
 
           const srcXVisible = i * visibleW;
 
-          // Draw the visible region in the center of the tile
           ctx.drawImage(masterCanvas, srcXVisible, 0, visibleW, TILE_H, bleed, 0, visibleW, TILE_H);
 
-          // Fill left bleed by copying from master canvas (or wrapping)
           const leftSrcX = Math.max(srcXVisible - bleed, 0);
           const leftSrcW = srcXVisible - leftSrcX;
 
@@ -1142,7 +1224,6 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.drawImage(masterCanvas, srcXVisible, 0, missingLeft, TILE_H, 0, 0, missingLeft, TILE_H);
           }
 
-          // Fill right bleed by copying from master canvas (or wrapping)
           const rightEdge = srcXVisible + visibleW;
           const rightSrcX = Math.min(rightEdge, MASTER_W);
           const rightAvailable = Math.max(0, MASTER_W - rightSrcX);
@@ -1157,7 +1238,6 @@ document.addEventListener('DOMContentLoaded', function() {
             ctx.drawImage(masterCanvas, rightEdge - missingRight, 0, missingRight, TILE_H, bleed + visibleW + rightSrcW, 0, missingRight, TILE_H);
           }
 
-          // Create preview image
           const dataURL = canvas.toDataURL("image/png");
           const previewImg = new Image();
           previewImg.src = dataURL;
@@ -1168,7 +1248,6 @@ document.addEventListener('DOMContentLoaded', function() {
 
           const filename = `partition_${i + 1}.png`;
 
-          // Convert to blob + add to zip + enable per-tile download
           canvas.toBlob(function(blob) {
             latestParts.push({ index: i + 1, blob: blob, filename: filename });
             zip.file(filename, blob);
